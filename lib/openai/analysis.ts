@@ -15,8 +15,35 @@ export interface AIAnalysisResult {
   error_message?: string | null
 }
 
+// Supabaseから製品リストを取得
+async function getSuntoryProducts(): Promise<string[]> {
+  try {
+    const { createClient } = await import('@/lib/supabase/client')
+    const supabase = createClient()
+    
+    const { data } = await supabase
+      .from('suntory_products')
+      .select('brand_name')
+      .eq('is_active', true)
+    
+    return data?.map(p => p.brand_name) || []
+  } catch (error) {
+    console.error('Error fetching products:', error)
+    // フォールバックとして基本的な製品リストを返す
+    return [
+      'ザ・プレミアム・モルツ', '金麦', '角ハイボール', '翠', 
+      'こだわり酒場のレモンサワー', '-196℃', 'ほろよい',
+      'オールフリー', 'サントリー天然水', '伊右衛門', 'BOSS'
+    ]
+  }
+}
+
 export async function analyzeDrinkImage(imageBase64: string): Promise<AIAnalysisResult> {
   try {
+    // データベースから最新の製品リストを取得
+    const suntoryProducts = await getSuntoryProducts()
+    const productListText = suntoryProducts.join('、')
+
     const response = await openai.chat.completions.create({
       model: "gpt-4o-mini",
       messages: [
@@ -37,15 +64,26 @@ export async function analyzeDrinkImage(imageBase64: string): Promise<AIAnalysis
           2. 飲料以外（食べ物など）の場合は、product_type: "other", error_message: "飲料ではありません"
           3. 画像が不鮮明な場合は、confidence を低く設定
           
-          サントリー製品例：
-          ビール：ザ・プレミアム・モルツ、モルツ、香るエール、金麦
-          ハイボール：角ハイボール、白州ハイボール、知多ハイボール、トリスハイボール、ジムビームハイボール
-          サワー：こだわり酒場レモンサワー、-196℃、ほろよい、グレープフルーツサワー
-          ジン：翠（SUI）ジンソーダ
-          ノンアル：オールフリー、のんある気分
-          水・茶：サントリー天然水、烏龍茶、伊右衛門、BOSS（コーヒー）
+          サントリー製品の判定基準：
+          1. 以下のブランドはサントリー製品です（データベースから取得）：
+          ${productListText}
           
-          他社製品の場合でも正確に商品名を識別してください。`
+          2. 以下は他社製品です（サントリーではありません）：
+          コカ・コーラ社：コカ・コーラ、綾鷹、爽健美茶、アクエリアス、い・ろ・は・す、ジョージア
+          アサヒ：スーパードライ、クリアアサヒ、ウィルキンソン、三ツ矢サイダー、ワンダ、十六茶
+          キリン：一番搾り、淡麗、午後の紅茶、生茶、ファイア、キリンレモン
+          サッポロ：黒ラベル、ヱビス、サッポロ生ビール
+          伊藤園：お〜いお茶、充実野菜
+          ペプシコ：ペプシ
+          
+          3. 判定のポイント：
+          - 綾鷹 → コカ・コーラ社製品なので is_suntory: false
+          - 伊右衛門 → サントリー製品なので is_suntory: true
+          - お〜いお茶 → 伊藤園製品なので is_suntory: false
+          - 烏龍茶（サントリー） → is_suntory: true
+          - C.C.レモン → サントリー製品なので is_suntory: true
+          
+          必ず製造メーカーを正確に判定してください。`
         },
         {
           role: "user",

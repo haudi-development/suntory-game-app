@@ -171,6 +171,9 @@ export default function AdminDashboard() {
             <Link href="/admin/users" className="hover:text-accent">
               ユーザー管理
             </Link>
+            <Link href="/admin/products" className="hover:text-accent">
+              製品管理
+            </Link>
             <Link href="/admin/content" className="hover:text-accent">
               コンテンツ管理
             </Link>
