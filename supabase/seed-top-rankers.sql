@@ -24,23 +24,23 @@ DECLARE
     '翠ジンソーダ'
   ];
   
-  user_id UUID;
+  new_user_id UUID;
   i INT;
   j INT;
 BEGIN
   -- トップ5のエリートユーザーを作成
   FOR i IN 1..5 LOOP
-    user_id := gen_random_uuid();
+    new_user_id := gen_random_uuid();
     
     -- プロフィール作成（高ポイント）
     INSERT INTO profiles (
-      user_id,
+      new_user_id,
       nickname,
       selected_character,
       total_points,
       created_at
     ) VALUES (
-      user_id,
+      new_user_id,
       CASE i
         WHEN 1 THEN '佐藤マスター'
         WHEN 2 THEN 'プレモル王'
@@ -67,7 +67,7 @@ BEGIN
     
     -- 全キャラクター解放（高レベル）
     INSERT INTO user_characters (
-      user_id,
+      new_user_id,
       character_type,
       level,
       exp,
@@ -75,7 +75,7 @@ BEGIN
       created_at
     ) 
     SELECT 
-      user_id,
+      new_user_id,
       unnest(ARRAY['beer', 'highball', 'water', 'gin', 'sour', 'non_alcohol']),
       15 + floor(random() * 10)::INT, -- レベル15-25
       floor(random() * 100)::INT,
@@ -86,7 +86,7 @@ BEGIN
     -- 豊富な消費記録（200-300件）
     FOR j IN 1..(200 + floor(random() * 101)::INT) LOOP
       INSERT INTO consumptions (
-        user_id,
+        new_user_id,
         brand_name,
         product_type,
         container,
@@ -98,7 +98,7 @@ BEGIN
         points_earned,
         created_at
       ) VALUES (
-        user_id,
+        new_user_id,
         elite_brands[1 + floor(random() * array_length(elite_brands, 1))::INT],
         CASE i
           WHEN 1 THEN 'highball'
@@ -133,7 +133,7 @@ BEGIN
     -- 全バッジを付与
     INSERT INTO user_badges (user_id, badge_id, earned_at)
     SELECT 
-      user_id,
+      new_user_id,
       id,
       NOW() - (floor(random() * 180)::TEXT || ' days')::INTERVAL
     FROM badges
@@ -153,13 +153,13 @@ DECLARE
     'こだわり職人', 'トリスの達人', 'BOSS愛好家', '天然水の守護者', '伊右衛門の茶人'
   ];
   
-  user_id UUID;
+  mid_user_id UUID;
   points INT;
   i INT;
   j INT;
 BEGIN
   FOR i IN 1..15 LOOP
-    user_id := gen_random_uuid();
+    mid_user_id := gen_random_uuid();
     points := 7000 - (i * 300) + floor(random() * 200)::INT;
     
     INSERT INTO profiles (
@@ -169,7 +169,7 @@ BEGIN
       total_points,
       created_at
     ) VALUES (
-      user_id,
+      mid_user_id,
       mid_nicknames[i],
       (ARRAY['beer', 'highball', 'water', 'gin', 'sour', 'non_alcohol'])[1 + floor(random() * 6)::INT],
       points,
@@ -186,7 +186,7 @@ BEGIN
         evolution_stage,
         created_at
       ) VALUES (
-        user_id,
+        mid_user_id,
         (ARRAY['beer', 'highball', 'water', 'gin', 'sour', 'non_alcohol'])[j],
         10 + floor(random() * 6)::INT,
         floor(random() * 100)::INT,
@@ -210,7 +210,7 @@ BEGIN
         points_earned,
         created_at
       ) VALUES (
-        user_id,
+        mid_user_id,
         (ARRAY['ザ・プレミアム・モルツ', '金麦', '角ハイボール', 'トリスハイボール', 
                'こだわり酒場のレモンサワー', '-196℃', '翠', 'オールフリー'])[1 + floor(random() * 8)::INT],
         (ARRAY['draft_beer', 'highball', 'sour', 'gin_soda', 'non_alcohol'])[1 + floor(random() * 5)::INT],
@@ -228,7 +228,7 @@ BEGIN
     -- バッジ付与（5-10個）
     INSERT INTO user_badges (user_id, badge_id, earned_at)
     SELECT 
-      user_id,
+      mid_user_id,
       id,
       NOW() - (floor(random() * 90)::TEXT || ' days')::INTERVAL
     FROM badges

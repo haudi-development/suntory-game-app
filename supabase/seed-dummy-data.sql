@@ -53,7 +53,7 @@ DECLARE
     'オールフリー', 'サントリー天然水', '伊右衛門', 'BOSS'
   ];
   
-  user_id UUID;
+  new_user_id UUID;
   i INT;
   j INT;
   random_points INT;
@@ -69,7 +69,7 @@ BEGIN
     created_date := NOW() - (random() * 30 || ' days')::INTERVAL;
     
     -- ユーザーIDを生成
-    user_id := gen_random_uuid();
+    new_user_id := gen_random_uuid();
     
     -- プロフィール作成
     INSERT INTO profiles (
@@ -79,7 +79,7 @@ BEGIN
       total_points,
       created_at
     ) VALUES (
-      user_id,
+      new_user_id,
       nicknames[i],
       character_types[1 + floor(random() * 6)::INT],
       random_points,
@@ -96,7 +96,7 @@ BEGIN
         evolution_stage,
         created_at
       ) VALUES (
-        user_id,
+        new_user_id,
         character_types[j],
         1 + floor(random() * 10)::INT,
         floor(random() * 100)::INT,
@@ -120,7 +120,7 @@ BEGIN
         points_earned,
         created_at
       ) VALUES (
-        user_id,
+        new_user_id,
         brands[1 + floor(random() * array_length(brands, 1))::INT],
         CASE floor(random() * 7)::INT
           WHEN 0 THEN 'draft_beer'
