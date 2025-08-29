@@ -71,38 +71,45 @@ BEGIN
     -- ユーザーIDを生成
     new_user_id := gen_random_uuid();
     
-    -- プロフィール作成
-    INSERT INTO profiles (
-      user_id,
-      nickname,
-      selected_character,
-      total_points,
-      created_at
-    ) VALUES (
-      new_user_id,
-      nicknames[i],
-      character_types[1 + floor(random() * 6)::INT],
-      random_points,
-      created_date
-    ) ON CONFLICT (user_id) DO NOTHING;
-    
-    -- キャラクター解放（ランダムに3-6体）
-    FOR j IN 1..(3 + floor(random() * 4)::INT) LOOP
-      INSERT INTO user_characters (
+    -- プロフィール作成（重複チェック付き）
+    IF NOT EXISTS (SELECT 1 FROM profiles WHERE user_id = new_user_id) THEN
+      INSERT INTO profiles (
         user_id,
-        character_type,
-        level,
-        exp,
-        evolution_stage,
+        nickname,
+        selected_character,
+        total_points,
         created_at
       ) VALUES (
         new_user_id,
-        character_types[j],
-        1 + floor(random() * 10)::INT,
-        floor(random() * 100)::INT,
-        1 + floor(random() * 3)::INT,
+        nicknames[i],
+        character_types[1 + floor(random() * 6)::INT],
+        random_points,
         created_date
-      ) ON CONFLICT (user_id, character_type) DO NOTHING;
+      );
+    END IF;
+    
+    -- キャラクター解放（ランダムに3-6体）
+    FOR j IN 1..(3 + floor(random() * 4)::INT) LOOP
+      IF NOT EXISTS (
+        SELECT 1 FROM user_characters 
+        WHERE user_id = new_user_id AND character_type = character_types[j]
+      ) THEN
+        INSERT INTO user_characters (
+          user_id,
+          character_type,
+          level,
+          exp,
+          evolution_stage,
+          created_at
+        ) VALUES (
+          new_user_id,
+          character_types[j],
+          1 + floor(random() * 10)::INT,
+          floor(random() * 100)::INT,
+          1 + floor(random() * 3)::INT,
+          created_date
+        );
+      END IF;
     END LOOP;
     
     -- 消費記録を作成（各ユーザー5-20件）
@@ -157,26 +164,129 @@ END $$;
 -- 2. バッジマスタデータの作成
 -- ========================================
 
-INSERT INTO badges (id, name, icon, description, condition_type, condition_value, created_at) VALUES
-  ('first_drink', 'はじめての一杯', '🍺', '初めて記録を作成', 'consumption_count', 1, NOW()),
-  ('10_drinks', '常連さん', '🍻', '10回記録達成', 'consumption_count', 10, NOW()),
-  ('50_drinks', 'ベテラン', '🏅', '50回記録達成', 'consumption_count', 50, NOW()),
-  ('100_drinks', 'マスター', '👑', '100回記録達成', 'consumption_count', 100, NOW()),
-  ('3days_streak', '3日連続', '🔥', '3日連続で記録', 'streak_days', 3, NOW()),
-  ('7days_streak', '週間マスター', '🌟', '7日連続で記録', 'streak_days', 7, NOW()),
-  ('30days_streak', '月間チャンピオン', '🏆', '30日連続で記録', 'streak_days', 30, NOW()),
-  ('explorer', '探検家', '🗾', '5つの異なる店舗で記録', 'unique_venues', 5, NOW()),
-  ('night_owl', 'ナイトオウル', '🌙', '22時以降に10回記録', 'time_condition', 10, NOW()),
-  ('early_bird', '早起き鳥', '🌅', '午前中に5回記録', 'time_condition', 5, NOW()),
-  ('weekend_warrior', '週末戦士', '🎉', '週末に20回記録', 'weekend_count', 20, NOW()),
-  ('variety_seeker', 'バラエティシーカー', '🌈', '10種類の異なる商品を記録', 'unique_products', 10, NOW()),
-  ('premium_lover', 'プレミアム愛好家', '💎', 'プレミアムモルツを10回記録', 'specific_product', 10, NOW()),
-  ('highball_master', 'ハイボールマスター', '🥃', 'ハイボールを20回記録', 'product_type', 20, NOW()),
-  ('healthy_choice', 'ヘルシーチョイス', '💚', 'ノンアルコールを10回記録', 'product_type', 10, NOW())
-ON CONFLICT (id) DO UPDATE SET
-  name = EXCLUDED.name,
-  icon = EXCLUDED.icon,
-  description = EXCLUDED.description;
+-- バッジマスタデータの挿入（既存レコードがある場合は更新）
+DO $$
+BEGIN
+  -- first_drink
+  IF NOT EXISTS (SELECT 1 FROM badges WHERE id = 'first_drink') THEN
+    INSERT INTO badges (id, name, icon, description, condition_type, condition_value, created_at)
+    VALUES ('first_drink', 'はじめての一杯', '🍺', '初めて記録を作成', 'consumption_count', 1, NOW());
+  ELSE
+    UPDATE badges SET name = 'はじめての一杯', icon = '🍺', description = '初めて記録を作成' WHERE id = 'first_drink';
+  END IF;
+  
+  -- 10_drinks
+  IF NOT EXISTS (SELECT 1 FROM badges WHERE id = '10_drinks') THEN
+    INSERT INTO badges (id, name, icon, description, condition_type, condition_value, created_at)
+    VALUES ('10_drinks', '常連さん', '🍻', '10回記録達成', 'consumption_count', 10, NOW());
+  ELSE
+    UPDATE badges SET name = '常連さん', icon = '🍻', description = '10回記録達成' WHERE id = '10_drinks';
+  END IF;
+  
+  -- 50_drinks
+  IF NOT EXISTS (SELECT 1 FROM badges WHERE id = '50_drinks') THEN
+    INSERT INTO badges (id, name, icon, description, condition_type, condition_value, created_at)
+    VALUES ('50_drinks', 'ベテラン', '🏅', '50回記録達成', 'consumption_count', 50, NOW());
+  ELSE
+    UPDATE badges SET name = 'ベテラン', icon = '🏅', description = '50回記録達成' WHERE id = '50_drinks';
+  END IF;
+  
+  -- 100_drinks
+  IF NOT EXISTS (SELECT 1 FROM badges WHERE id = '100_drinks') THEN
+    INSERT INTO badges (id, name, icon, description, condition_type, condition_value, created_at)
+    VALUES ('100_drinks', 'マスター', '👑', '100回記録達成', 'consumption_count', 100, NOW());
+  ELSE
+    UPDATE badges SET name = 'マスター', icon = '👑', description = '100回記録達成' WHERE id = '100_drinks';
+  END IF;
+  
+  -- 3days_streak
+  IF NOT EXISTS (SELECT 1 FROM badges WHERE id = '3days_streak') THEN
+    INSERT INTO badges (id, name, icon, description, condition_type, condition_value, created_at)
+    VALUES ('3days_streak', '3日連続', '🔥', '3日連続で記録', 'streak_days', 3, NOW());
+  ELSE
+    UPDATE badges SET name = '3日連続', icon = '🔥', description = '3日連続で記録' WHERE id = '3days_streak';
+  END IF;
+  
+  -- 7days_streak
+  IF NOT EXISTS (SELECT 1 FROM badges WHERE id = '7days_streak') THEN
+    INSERT INTO badges (id, name, icon, description, condition_type, condition_value, created_at)
+    VALUES ('7days_streak', '週間マスター', '🌟', '7日連続で記録', 'streak_days', 7, NOW());
+  ELSE
+    UPDATE badges SET name = '週間マスター', icon = '🌟', description = '7日連続で記録' WHERE id = '7days_streak';
+  END IF;
+  
+  -- 30days_streak
+  IF NOT EXISTS (SELECT 1 FROM badges WHERE id = '30days_streak') THEN
+    INSERT INTO badges (id, name, icon, description, condition_type, condition_value, created_at)
+    VALUES ('30days_streak', '月間チャンピオン', '🏆', '30日連続で記録', 'streak_days', 30, NOW());
+  ELSE
+    UPDATE badges SET name = '月間チャンピオン', icon = '🏆', description = '30日連続で記録' WHERE id = '30days_streak';
+  END IF;
+  
+  -- explorer
+  IF NOT EXISTS (SELECT 1 FROM badges WHERE id = 'explorer') THEN
+    INSERT INTO badges (id, name, icon, description, condition_type, condition_value, created_at)
+    VALUES ('explorer', '探検家', '🗾', '5つの異なる店舗で記録', 'unique_venues', 5, NOW());
+  ELSE
+    UPDATE badges SET name = '探検家', icon = '🗾', description = '5つの異なる店舗で記録' WHERE id = 'explorer';
+  END IF;
+  
+  -- night_owl
+  IF NOT EXISTS (SELECT 1 FROM badges WHERE id = 'night_owl') THEN
+    INSERT INTO badges (id, name, icon, description, condition_type, condition_value, created_at)
+    VALUES ('night_owl', 'ナイトオウル', '🌙', '22時以降に10回記録', 'time_condition', 10, NOW());
+  ELSE
+    UPDATE badges SET name = 'ナイトオウル', icon = '🌙', description = '22時以降に10回記録' WHERE id = 'night_owl';
+  END IF;
+  
+  -- early_bird
+  IF NOT EXISTS (SELECT 1 FROM badges WHERE id = 'early_bird') THEN
+    INSERT INTO badges (id, name, icon, description, condition_type, condition_value, created_at)
+    VALUES ('early_bird', '早起き鳥', '🌅', '午前中に5回記録', 'time_condition', 5, NOW());
+  ELSE
+    UPDATE badges SET name = '早起き鳥', icon = '🌅', description = '午前中に5回記録' WHERE id = 'early_bird';
+  END IF;
+  
+  -- weekend_warrior
+  IF NOT EXISTS (SELECT 1 FROM badges WHERE id = 'weekend_warrior') THEN
+    INSERT INTO badges (id, name, icon, description, condition_type, condition_value, created_at)
+    VALUES ('weekend_warrior', '週末戦士', '🎉', '週末に20回記録', 'weekend_count', 20, NOW());
+  ELSE
+    UPDATE badges SET name = '週末戦士', icon = '🎉', description = '週末に20回記録' WHERE id = 'weekend_warrior';
+  END IF;
+  
+  -- variety_seeker
+  IF NOT EXISTS (SELECT 1 FROM badges WHERE id = 'variety_seeker') THEN
+    INSERT INTO badges (id, name, icon, description, condition_type, condition_value, created_at)
+    VALUES ('variety_seeker', 'バラエティシーカー', '🌈', '10種類の異なる商品を記録', 'unique_products', 10, NOW());
+  ELSE
+    UPDATE badges SET name = 'バラエティシーカー', icon = '🌈', description = '10種類の異なる商品を記録' WHERE id = 'variety_seeker';
+  END IF;
+  
+  -- premium_lover
+  IF NOT EXISTS (SELECT 1 FROM badges WHERE id = 'premium_lover') THEN
+    INSERT INTO badges (id, name, icon, description, condition_type, condition_value, created_at)
+    VALUES ('premium_lover', 'プレミアム愛好家', '💎', 'プレミアムモルツを10回記録', 'specific_product', 10, NOW());
+  ELSE
+    UPDATE badges SET name = 'プレミアム愛好家', icon = '💎', description = 'プレミアムモルツを10回記録' WHERE id = 'premium_lover';
+  END IF;
+  
+  -- highball_master
+  IF NOT EXISTS (SELECT 1 FROM badges WHERE id = 'highball_master') THEN
+    INSERT INTO badges (id, name, icon, description, condition_type, condition_value, created_at)
+    VALUES ('highball_master', 'ハイボールマスター', '🥃', 'ハイボールを20回記録', 'product_type', 20, NOW());
+  ELSE
+    UPDATE badges SET name = 'ハイボールマスター', icon = '🥃', description = 'ハイボールを20回記録' WHERE id = 'highball_master';
+  END IF;
+  
+  -- healthy_choice
+  IF NOT EXISTS (SELECT 1 FROM badges WHERE id = 'healthy_choice') THEN
+    INSERT INTO badges (id, name, icon, description, condition_type, condition_value, created_at)
+    VALUES ('healthy_choice', 'ヘルシーチョイス', '💚', 'ノンアルコールを10回記録', 'product_type', 10, NOW());
+  ELSE
+    UPDATE badges SET name = 'ヘルシーチョイス', icon = '💚', description = 'ノンアルコールを10回記録' WHERE id = 'healthy_choice';
+  END IF;
+END $$;
 
 -- ========================================
 -- 3. ダミーユーザーにバッジを付与
@@ -197,43 +307,73 @@ BEGIN
     
     -- 記録数に応じたバッジを付与
     IF consumption_count >= 1 THEN
-      INSERT INTO user_badges (user_id, badge_id, earned_at)
-      VALUES (user_record.user_id, 'first_drink', NOW())
-      ON CONFLICT (user_id, badge_id) DO NOTHING;
+      IF NOT EXISTS (
+        SELECT 1 FROM user_badges 
+        WHERE user_id = user_record.user_id AND badge_id = 'first_drink'
+      ) THEN
+        INSERT INTO user_badges (user_id, badge_id, earned_at)
+        VALUES (user_record.user_id, 'first_drink', NOW());
+      END IF;
     END IF;
     
     IF consumption_count >= 10 THEN
-      INSERT INTO user_badges (user_id, badge_id, earned_at)
-      VALUES (user_record.user_id, '10_drinks', NOW())
-      ON CONFLICT (user_id, badge_id) DO NOTHING;
+      IF NOT EXISTS (
+        SELECT 1 FROM user_badges 
+        WHERE user_id = user_record.user_id AND badge_id = '10_drinks'
+      ) THEN
+        INSERT INTO user_badges (user_id, badge_id, earned_at)
+        VALUES (user_record.user_id, '10_drinks', NOW());
+      END IF;
     END IF;
     
     IF consumption_count >= 50 THEN
-      INSERT INTO user_badges (user_id, badge_id, earned_at)
-      VALUES (user_record.user_id, '50_drinks', NOW())
-      ON CONFLICT (user_id, badge_id) DO NOTHING;
+      IF NOT EXISTS (
+        SELECT 1 FROM user_badges 
+        WHERE user_id = user_record.user_id AND badge_id = '50_drinks'
+      ) THEN
+        INSERT INTO user_badges (user_id, badge_id, earned_at)
+        VALUES (user_record.user_id, '50_drinks', NOW());
+      END IF;
     END IF;
     
     -- ポイントが高いユーザーには追加バッジ
     IF user_record.total_points >= 1000 THEN
-      INSERT INTO user_badges (user_id, badge_id, earned_at)
-      VALUES 
-        (user_record.user_id, 'variety_seeker', NOW()),
-        (user_record.user_id, 'explorer', NOW())
-      ON CONFLICT (user_id, badge_id) DO NOTHING;
+      IF NOT EXISTS (
+        SELECT 1 FROM user_badges 
+        WHERE user_id = user_record.user_id AND badge_id = 'variety_seeker'
+      ) THEN
+        INSERT INTO user_badges (user_id, badge_id, earned_at)
+        VALUES (user_record.user_id, 'variety_seeker', NOW());
+      END IF;
+      
+      IF NOT EXISTS (
+        SELECT 1 FROM user_badges 
+        WHERE user_id = user_record.user_id AND badge_id = 'explorer'
+      ) THEN
+        INSERT INTO user_badges (user_id, badge_id, earned_at)
+        VALUES (user_record.user_id, 'explorer', NOW());
+      END IF;
     END IF;
     
     -- ランダムに追加バッジを付与（リアル感を出すため）
     IF random() > 0.5 THEN
-      INSERT INTO user_badges (user_id, badge_id, earned_at)
-      VALUES (user_record.user_id, 'weekend_warrior', NOW())
-      ON CONFLICT (user_id, badge_id) DO NOTHING;
+      IF NOT EXISTS (
+        SELECT 1 FROM user_badges 
+        WHERE user_id = user_record.user_id AND badge_id = 'weekend_warrior'
+      ) THEN
+        INSERT INTO user_badges (user_id, badge_id, earned_at)
+        VALUES (user_record.user_id, 'weekend_warrior', NOW());
+      END IF;
     END IF;
     
     IF random() > 0.7 THEN
-      INSERT INTO user_badges (user_id, badge_id, earned_at)
-      VALUES (user_record.user_id, 'night_owl', NOW())
-      ON CONFLICT (user_id, badge_id) DO NOTHING;
+      IF NOT EXISTS (
+        SELECT 1 FROM user_badges 
+        WHERE user_id = user_record.user_id AND badge_id = 'night_owl'
+      ) THEN
+        INSERT INTO user_badges (user_id, badge_id, earned_at)
+        VALUES (user_record.user_id, 'night_owl', NOW());
+      END IF;
     END IF;
   END LOOP;
 END $$;

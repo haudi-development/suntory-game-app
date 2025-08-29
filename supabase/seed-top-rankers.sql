@@ -8,14 +8,6 @@
 
 DO $$
 DECLARE
-  top_users RECORD[] := ARRAY[
-    ROW('佐藤マスター', 'master@example.com', 12000, 'highball')::RECORD,
-    ROW('プレモル王', 'premium@example.com', 10500, 'beer')::RECORD,
-    ROW('ハイボール仙人', 'highball@example.com', 9800, 'highball')::RECORD,
-    ROW('翠の達人', 'sui@example.com', 8500, 'gin')::RECORD,
-    ROW('サワー女王', 'sour@example.com', 7200, 'sour')::RECORD
-  ];
-  
   elite_brands TEXT[] := ARRAY[
     'ザ・プレミアム・モルツ マスターズドリーム',
     '白州ハイボール',
@@ -27,6 +19,7 @@ DECLARE
   new_user_id UUID;
   i INT;
   j INT;
+  badge_record RECORD;
 BEGIN
   -- トップ5のエリートユーザーを作成
   FOR i IN 1..5 LOOP
@@ -34,7 +27,7 @@ BEGIN
     
     -- プロフィール作成（高ポイント）
     INSERT INTO profiles (
-      new_user_id,
+      user_id,
       nickname,
       selected_character,
       total_points,
@@ -67,7 +60,7 @@ BEGIN
     
     -- 全キャラクター解放（高レベル）
     INSERT INTO user_characters (
-      new_user_id,
+      user_id,
       character_type,
       level,
       exp,
@@ -80,13 +73,12 @@ BEGIN
       15 + floor(random() * 10)::INT, -- レベル15-25
       floor(random() * 100)::INT,
       3, -- 最終進化
-      NOW() - INTERVAL '180 days'
-    ON CONFLICT (user_id, character_type) DO NOTHING;
+      NOW() - INTERVAL '180 days';
     
     -- 豊富な消費記録（200-300件）
     FOR j IN 1..(200 + floor(random() * 101)::INT) LOOP
       INSERT INTO consumptions (
-        new_user_id,
+        user_id,
         brand_name,
         product_type,
         container,
@@ -131,13 +123,15 @@ BEGIN
     END LOOP;
     
     -- 全バッジを付与
-    INSERT INTO user_badges (user_id, badge_id, earned_at)
-    SELECT 
-      new_user_id,
-      id,
-      NOW() - (floor(random() * 180)::TEXT || ' days')::INTERVAL
-    FROM badges
-    ON CONFLICT (user_id, badge_id) DO NOTHING;
+    FOR badge_record IN SELECT id FROM badges LOOP
+      IF NOT EXISTS (
+        SELECT 1 FROM user_badges 
+        WHERE user_id = new_user_id AND badge_id = badge_record.id
+      ) THEN
+        INSERT INTO user_badges (user_id, badge_id, earned_at)
+        VALUES (new_user_id, badge_record.id, NOW() - (floor(random() * 180)::TEXT || ' days')::INTERVAL);
+      END IF;
+    END LOOP;
   END LOOP;
 END $$;
 
@@ -157,6 +151,7 @@ DECLARE
   points INT;
   i INT;
   j INT;
+  badge_record RECORD;
 BEGIN
   FOR i IN 1..15 LOOP
     mid_user_id := gen_random_uuid();
@@ -192,7 +187,7 @@ BEGIN
         floor(random() * 100)::INT,
         2,
         NOW() - INTERVAL '90 days'
-      ) ON CONFLICT (user_id, character_type) DO NOTHING;
+      );
     END LOOP;
     
     -- 消費記録（50-100件）
@@ -226,15 +221,19 @@ BEGIN
     END LOOP;
     
     -- バッジ付与（5-10個）
-    INSERT INTO user_badges (user_id, badge_id, earned_at)
-    SELECT 
-      mid_user_id,
-      id,
-      NOW() - (floor(random() * 90)::TEXT || ' days')::INTERVAL
-    FROM badges
-    WHERE random() > 0.5
-    LIMIT 5 + floor(random() * 6)::INT
-    ON CONFLICT (user_id, badge_id) DO NOTHING;
+    FOR badge_record IN 
+      SELECT id FROM badges
+      WHERE random() > 0.5
+      LIMIT 5 + floor(random() * 6)::INT
+    LOOP
+      IF NOT EXISTS (
+        SELECT 1 FROM user_badges 
+        WHERE user_id = mid_user_id AND badge_id = badge_record.id
+      ) THEN
+        INSERT INTO user_badges (user_id, badge_id, earned_at)
+        VALUES (mid_user_id, badge_record.id, NOW() - (floor(random() * 90)::TEXT || ' days')::INTERVAL);
+      END IF;
+    END LOOP;
   END LOOP;
 END $$;
 
