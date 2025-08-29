@@ -149,6 +149,19 @@ export default function CapturePage() {
         if (profileError) throw profileError
 
         toast.success(`${points}ポイント獲得！`)
+        
+        // バッジチェック（非同期で実行）
+        import('@/lib/badges/system').then(({ checkAndGrantBadges }) => {
+          checkAndGrantBadges(user.id).then(newBadges => {
+            newBadges.forEach(badgeName => {
+              setTimeout(() => {
+                toast.success(`🎖️ バッジ「${badgeName}」を獲得しました！`, {
+                  duration: 5000,
+                })
+              }, 2000)
+            })
+          })
+        })
       }
       
       setTimeout(() => {
