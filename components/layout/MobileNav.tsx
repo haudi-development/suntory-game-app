@@ -9,7 +9,7 @@ export default function MobileNav() {
 
   const navItems = [
     { href: '/', icon: '🏠', label: 'ホーム' },
-    { href: '/capture', icon: <Camera size={24} />, label: '撮影' },
+    { href: '/capture', icon: <Camera size={24} />, label: '記録' },
     { href: '/leaderboard', icon: <Trophy size={24} />, label: 'ランキング' },
     { href: '/profile', icon: <User size={24} />, label: 'マイページ' },
   ]

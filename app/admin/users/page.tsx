@@ -6,6 +6,7 @@ import { createClient } from '@/lib/supabase/client'
 import Link from 'next/link'
 import { ArrowLeft, Search, Edit, Trash2, Award, TrendingUp } from 'lucide-react'
 import toast, { Toaster } from 'react-hot-toast'
+import UserQuickActions from '@/components/admin/UserQuickActions'
 
 export default function AdminUsersPage() {
   const [users, setUsers] = useState<any[]>([])
@@ -14,6 +15,15 @@ export default function AdminUsersPage() {
   const [selectedUser, setSelectedUser] = useState<any>(null)
   const [showEditModal, setShowEditModal] = useState(false)
   const [showBadgeModal, setShowBadgeModal] = useState(false)
+  const [showCharacterModal, setShowCharacterModal] = useState(false)
+  const [availableCharacters] = useState([
+    { id: 'beer', name: 'ビール君', icon: '🍺' },
+    { id: 'highball', name: 'ハイボール仙人', icon: '🥃' },
+    { id: 'water', name: '水の守護神', icon: '💧' },
+    { id: 'gin', name: '翠の精霊', icon: '🌿' },
+    { id: 'sour', name: 'サワー姫', icon: '🍋' },
+    { id: 'non_alcohol', name: 'ノンアル騎士', icon: '🍾' }
+  ])
   const router = useRouter()
   const supabase = createClient()
 
@@ -31,17 +41,34 @@ export default function AdminUsersPage() {
 
   async function fetchUsers() {
     try {
+      // まずauth.usersから認証情報を取得（管理者権限が必要）
+      const { data: { users: authUsers }, error: authError } = await supabase.auth.admin.listUsers()
+        .catch(() => ({ data: { users: null }, error: 'Admin API not available' }))
+      
+      console.log('Auth users:', authUsers)
+      
       const { data: profiles } = await supabase
         .from('profiles')
         .select(`
           *,
           consumptions(count),
           user_badges(badge_id),
-          user_characters(character_type)
+          user_characters(character_type, level, evolution_stage)
         `)
         .order('created_at', { ascending: false })
 
-      setUsers(profiles || [])
+      // auth情報とprofile情報を結合
+      const usersWithAuth = profiles?.map(profile => {
+        const authUser = authUsers?.find(u => u.id === profile.user_id)
+        return {
+          ...profile,
+          email: authUser?.email || 'N/A',
+          email_confirmed: authUser?.email_confirmed_at ? true : false
+        }
+      })
+
+      console.log('Users with auth info:', usersWithAuth)
+      setUsers(usersWithAuth || [])
     } catch (error) {
       console.error('Error fetching users:', error)
       toast.error('ユーザー情報の取得に失敗しました')
@@ -101,6 +128,46 @@ export default function AdminUsersPage() {
     }
   }
 
+  async function updateUserCharacter(userId: string, characterId: string) {
+    try {
+      const { error } = await supabase
+        .from('profiles')
+        .update({ selected_character: characterId })
+        .eq('user_id', userId)
+
+      if (error) throw error
+
+      toast.success('キャラクターを変更しました')
+      fetchUsers()
+      setShowCharacterModal(false)
+    } catch (error) {
+      console.error('Error updating character:', error)
+      toast.error('キャラクターの変更に失敗しました')
+    }
+  }
+
+  async function unlockCharacter(userId: string, characterId: string) {
+    try {
+      const { error } = await supabase
+        .from('user_characters')
+        .insert({
+          user_id: userId,
+          character_type: characterId,
+          level: 1,
+          exp: 0,
+          evolution_stage: 1
+        })
+
+      if (error) throw error
+
+      toast.success('キャラクターを解放しました')
+      fetchUsers()
+    } catch (error) {
+      console.error('Error unlocking character:', error)
+      toast.error('キャラクターの解放に失敗しました')
+    }
+  }
+
   async function deleteUser(userId: string) {
     if (!confirm('本当にこのユーザーを削除しますか？')) return
 
@@ -143,23 +210,16 @@ export default function AdminUsersPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-100">
+    <div className="p-6">
       <Toaster position="top-center" />
       
-      {/* ヘッダー */}
-      <header className="bg-white shadow-sm">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex items-center h-16">
-            <Link href="/admin" className="flex items-center gap-2 text-gray-600 hover:text-gray-900 mr-4">
-              <ArrowLeft size={20} />
-              <span>戻る</span>
-            </Link>
-            <h1 className="text-xl font-bold text-gray-900">ユーザー管理</h1>
-          </div>
-        </div>
-      </header>
+      {/* ページヘッダー */}
+      <div className="mb-8">
+        <h1 className="text-3xl font-bold text-gray-900">ユーザー管理</h1>
+        <p className="text-gray-600 mt-2">ユーザーの一覧と編集</p>
+      </div>
 
-      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      <div>
         {/* 検索バー */}
         <div className="bg-white rounded-lg shadow p-4 mb-6">
           <div className="relative">
@@ -181,6 +241,9 @@ export default function AdminUsersPage() {
               <tr>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                   ユーザー
+                </th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  メール
                 </th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                   ポイント
@@ -220,6 +283,14 @@ export default function AdminUsersPage() {
                       </div>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
+                      <div className="text-sm text-gray-900">
+                        {user.email || 'N/A'}
+                      </div>
+                      {user.email_confirmed === false && (
+                        <span className="text-xs text-red-500">未確認</span>
+                      )}
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap">
                       <span className="font-bold text-primary">{user.total_points || 0} pt</span>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
@@ -254,6 +325,11 @@ export default function AdminUsersPage() {
                         >
                           <Award size={18} />
                         </button>
+                        <UserQuickActions
+                          userId={user.user_id}
+                          currentPoints={user.total_points || 0}
+                          onUpdate={fetchUsers}
+                        />
                         <button
                           onClick={() => deleteUser(user.user_id)}
                           className="text-red-600 hover:text-red-900"
@@ -268,7 +344,7 @@ export default function AdminUsersPage() {
             </tbody>
           </table>
         </div>
-      </main>
+      </div>
 
       {/* ポイント編集モーダル */}
       {showEditModal && selectedUser && (

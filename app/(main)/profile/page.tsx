@@ -117,17 +117,17 @@ export default function ProfilePage() {
         </div>
       </div>
 
-      <div className="max-w-md mx-auto px-4">
+      <div className="max-w-md mx-auto px-4 pb-20">
         <div className="card mb-4">
           <div className="flex justify-between items-center mb-4">
-            <h2 className="text-lg font-bold flex items-center gap-2">
+            <h2 className="text-base sm:text-lg font-bold flex items-center gap-2">
               <span>🎮</span> キャラクターコレクション
             </h2>
-            <Link href="/characters" className="text-sm text-primary-dark hover:underline">
+            <Link href="/characters" className="text-xs sm:text-sm text-primary-dark hover:underline">
               図鑑を見る →
             </Link>
           </div>
-          <div className="grid grid-cols-3 gap-4">
+          <div className="grid grid-cols-3 gap-2 sm:gap-4">
             {CHARACTERS.map(character => {
               const userData = userCharacters.find(
                 c => c.character_type === character.id
@@ -138,21 +138,23 @@ export default function ProfilePage() {
                 <div 
                   key={character.id} 
                   className={`text-center cursor-pointer transition-transform hover:scale-105 ${
-                    isSelected ? 'ring-2 ring-primary rounded-lg p-2' : 'p-2'
+                    isSelected ? 'ring-2 ring-primary rounded-lg p-1 sm:p-2' : 'p-1 sm:p-2'
                   }`}
                   onClick={() => handleCharacterSelect(character.id)}
                 >
-                  <Character
-                    character={character}
-                    level={userData.level}
-                    exp={userData.exp}
-                    isSelected={isSelected}
-                    showDetails={false}
-                  />
-                  <p className="text-xs mt-1 font-medium">{character.name}</p>
-                  <p className="text-xs text-gray-500">Lv.{userData.level}</p>
+                  <div className="w-full aspect-square flex items-center justify-center">
+                    <Character
+                      character={character}
+                      level={userData.level}
+                      exp={userData.exp}
+                      isSelected={isSelected}
+                      showDetails={false}
+                    />
+                  </div>
+                  <p className="text-[10px] sm:text-xs mt-1 font-medium truncate">{character.name}</p>
+                  <p className="text-[10px] sm:text-xs text-gray-500">Lv.{userData.level}</p>
                   {isSelected && (
-                    <p className="text-xs text-green-600 font-bold">使用中</p>
+                    <p className="text-[10px] sm:text-xs text-green-600 font-bold">使用中</p>
                   )}
                 </div>
               )
@@ -161,23 +163,23 @@ export default function ProfilePage() {
         </div>
 
         <div className="card mb-4">
-          <h2 className="text-lg font-bold mb-4 flex items-center gap-2">
-            <Award size={20} />
+          <h2 className="text-base sm:text-lg font-bold mb-4 flex items-center gap-2">
+            <Award size={18} className="sm:w-5 sm:h-5" />
             称号・バッジ
           </h2>
-          <div className="grid grid-cols-4 gap-3">
+          <div className="grid grid-cols-4 gap-2 sm:gap-3">
             {BADGES.map(badge => {
               const earned = userBadges.includes(badge.id)
               return (
                 <div
                   key={badge.id}
-                  className={`text-center p-2 rounded-lg ${
+                  className={`text-center p-1 sm:p-2 rounded-lg ${
                     earned ? 'bg-accent/10' : 'bg-gray-100 opacity-50'
                   }`}
                   title={badge.description}
                 >
-                  <div className="text-2xl mb-1">{badge.icon}</div>
-                  <p className="text-xs">{badge.name}</p>
+                  <div className="text-lg sm:text-2xl mb-1">{badge.icon}</div>
+                  <p className="text-[8px] sm:text-xs leading-tight">{badge.name}</p>
                 </div>
               )
             })}

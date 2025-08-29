@@ -27,10 +27,12 @@ export default function SignupPage() {
       if (authError) {
         toast.error(`登録に失敗しました: ${authError.message}`)
         console.error('Signup error:', authError)
+        setLoading(false)
         return
       }
       
       if (authData.user) {
+        // プロフィール作成
         const { error: profileError } = await supabase
           .from('profiles')
           .insert({
@@ -40,12 +42,15 @@ export default function SignupPage() {
           } as any)
 
         if (profileError) {
-          console.error('Profile error:', profileError)
-          // プロフィールがすでに存在する場合は無視
+          console.error('Profile creation error:', profileError)
+          // プロフィールがすでに存在する場合も成功として扱う
+          if (!profileError.message?.includes('duplicate')) {
+            toast.error(`プロフィール作成エラー: ${profileError.message}`)
+          }
         }
 
         // 水のキャラクターだけ初期解放
-        await supabase
+        const { error: charError } = await supabase
           .from('user_characters')
           .insert({
             user_id: authData.user.id,
@@ -55,15 +60,34 @@ export default function SignupPage() {
             evolution_stage: 1,
           } as any)
 
-        toast.success('登録完了！メール確認が必要な場合があります。')
-        toast.info('ログイン画面からログインしてください。', { duration: 5000 })
-        setTimeout(() => {
-          router.push('/login')
-        }, 2000)
+        if (charError) {
+          console.error('Character creation error:', charError)
+          // キャラクターがすでに存在する場合も成功として扱う
+          if (!charError.message?.includes('duplicate')) {
+            toast.error(`キャラクター作成エラー: ${charError.message}`)
+          }
+        }
+
+        toast.success('登録完了！')
+        
+        // 自動ログインを試みる
+        const { error: signInError } = await supabase.auth.signInWithPassword({
+          email,
+          password,
+        })
+        
+        if (!signInError) {
+          toast.success('自動ログインしました！')
+          router.push('/')  // ホーム画面へ遷移
+        } else {
+          toast.info('ログイン画面からログインしてください。', { duration: 5000 })
+          router.push('/login')  // ログイン画面へ遷移
+        }
       }
-    } catch (error) {
-      toast.error('エラーが発生しました')
-      console.error(error)
+    } catch (error: any) {
+      console.error('Unexpected error:', error)
+      toast.error(`エラーが発生しました: ${error.message || 'Unknown error'}`)
+      setLoading(false)
     } finally {
       setLoading(false)
     }

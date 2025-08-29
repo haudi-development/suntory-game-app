@@ -15,6 +15,7 @@ export default function AdminProductsPage() {
   const [showAddModal, setShowAddModal] = useState(false)
   const [showEditModal, setShowEditModal] = useState(false)
   const [editingProduct, setEditingProduct] = useState<any>(null)
+  const [tableExists, setTableExists] = useState(true)
   const [formData, setFormData] = useState({
     brand_name: '',
     product_category: 'draft_beer',
@@ -39,19 +40,143 @@ export default function AdminProductsPage() {
 
   async function fetchProducts() {
     try {
-      let query = supabase
+      setLoading(true)
+      
+      const { data, error } = await supabase
         .from('suntory_products')
         .select('*')
         .order('product_category', { ascending: true })
         .order('brand_name', { ascending: true })
 
-      const { data, error } = await query
-
-      if (error) throw error
+      if (error) {
+        console.error('Supabase error:', error)
+        
+        // テーブルが存在しない場合
+        if (error.message?.includes('relation') || 
+            error.message?.includes('does not exist') ||
+            error.code === '42P01') {
+          setTableExists(false)
+          toast.error('製品テーブルが存在しません。初期セットアップを実行してください。')
+          return
+        }
+        
+        // その他のエラー
+        toast.error(`製品情報の取得に失敗しました: ${error.message}`)
+        return
+      }
+      
       setProducts(data || [])
+      setTableExists(true)
+      
+    } catch (error: any) {
+      console.error('Unexpected error in fetchProducts:', error)
+      toast.error(`予期しないエラー: ${error?.message || 'Unknown error'}`)
+      setTableExists(false)
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  async function initializeProductTable() {
+    try {
+      setLoading(true)
+      
+      toast.info('製品テーブルを初期化中...')
+      
+      // まず既存のテーブルをチェック
+      const { error: checkError } = await supabase
+        .from('suntory_products')
+        .select('count')
+        .limit(1)
+      
+      if (!checkError) {
+        // テーブルが既に存在する場合
+        toast.info('テーブルは既に存在します。データを追加します。')
+      } else {
+        console.log('Table does not exist, will create via dashboard')
+        toast.warning('テーブルが存在しません。Supabaseダッシュボードで手動で作成してください。')
+        
+        // テーブル作成のSQLを表示
+        const createSQL = `
+-- Supabase SQL Editorで以下のSQLを実行してください：
+
+CREATE TABLE IF NOT EXISTS suntory_products (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  brand_name VARCHAR(255) NOT NULL UNIQUE,
+  product_category VARCHAR(50) NOT NULL,
+  product_line VARCHAR(255),
+  is_active BOOLEAN DEFAULT true,
+  description TEXT,
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+  updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+);
+
+CREATE INDEX IF NOT EXISTS idx_suntory_products_brand_name ON suntory_products(brand_name);
+CREATE INDEX IF NOT EXISTS idx_suntory_products_category ON suntory_products(product_category);
+CREATE INDEX IF NOT EXISTS idx_suntory_products_active ON suntory_products(is_active);
+        `
+        console.log(createSQL)
+        
+        // テーブル作成の指示を表示して、手動作成を促す
+        return
+      }
+
+      // 初期データを投入
+      const initialProducts = [
+        // ビール
+        { brand_name: 'ザ・プレミアム・モルツ', product_category: 'draft_beer', product_line: 'プレミアムモルツ' },
+        { brand_name: 'ザ・プレミアム・モルツ マスターズドリーム', product_category: 'draft_beer', product_line: 'プレミアムモルツ' },
+        { brand_name: '金麦', product_category: 'draft_beer', product_line: '金麦' },
+        { brand_name: '金麦 糖質75%オフ', product_category: 'draft_beer', product_line: '金麦' },
+        { brand_name: 'モルツ', product_category: 'draft_beer', product_line: 'モルツ' },
+        // ハイボール
+        { brand_name: '角ハイボール', product_category: 'highball', product_line: '角' },
+        { brand_name: '角ハイボール 濃いめ', product_category: 'highball', product_line: '角' },
+        { brand_name: 'トリスハイボール', product_category: 'highball', product_line: 'トリス' },
+        { brand_name: 'ジムビームハイボール', product_category: 'highball', product_line: 'ジムビーム' },
+        // サワー
+        { brand_name: 'こだわり酒場のレモンサワー', product_category: 'sour', product_line: 'こだわり酒場' },
+        { brand_name: '-196℃ ストロングゼロ ダブルレモン', product_category: 'sour', product_line: '-196℃' },
+        { brand_name: '-196℃ レモン', product_category: 'sour', product_line: '-196℃' },
+        { brand_name: 'ほろよい 白いサワー', product_category: 'sour', product_line: 'ほろよい' },
+        { brand_name: 'ほろよい もも', product_category: 'sour', product_line: 'ほろよい' },
+        // ジン
+        { brand_name: '翠', product_category: 'gin_soda', product_line: '翠' },
+        { brand_name: '翠ジンソーダ', product_category: 'gin_soda', product_line: '翠' },
+        // ノンアル
+        { brand_name: 'オールフリー', product_category: 'non_alcohol', product_line: 'オールフリー' },
+        { brand_name: 'のんある気分', product_category: 'non_alcohol', product_line: 'のんある気分' },
+        // 水・茶
+        { brand_name: 'サントリー天然水', product_category: 'water', product_line: '天然水' },
+        { brand_name: '伊右衛門', product_category: 'water', product_line: '伊右衛門' },
+        { brand_name: '伊右衛門 特茶', product_category: 'water', product_line: '伊右衛門' },
+        { brand_name: 'サントリー烏龍茶', product_category: 'water', product_line: '烏龍茶' },
+        // ソフトドリンク
+        { brand_name: 'BOSS', product_category: 'softdrink', product_line: 'BOSS' },
+        { brand_name: 'BOSS 無糖ブラック', product_category: 'softdrink', product_line: 'BOSS' },
+        { brand_name: 'クラフトボス', product_category: 'softdrink', product_line: 'BOSS' },
+        { brand_name: 'C.C.レモン', product_category: 'softdrink', product_line: 'C.C.レモン' },
+        { brand_name: 'ペプシコーラ', product_category: 'softdrink', product_line: 'ペプシ' },
+        { brand_name: 'デカビタC', product_category: 'softdrink', product_line: 'デカビタ' },
+        { brand_name: 'なっちゃん', product_category: 'softdrink', product_line: 'なっちゃん' }
+      ]
+
+      // データ投入
+      const { error: insertError } = await supabase
+        .from('suntory_products')
+        .upsert(initialProducts, { onConflict: 'brand_name' })
+
+      if (insertError) {
+        console.error('Insert error:', insertError)
+        toast.error('初期データの投入に失敗しました')
+      } else {
+        toast.success('製品テーブルを初期化しました')
+        setTableExists(true)
+        fetchProducts()
+      }
     } catch (error) {
-      console.error('Error fetching products:', error)
-      toast.error('製品情報の取得に失敗しました')
+      console.error('Initialization error:', error)
+      toast.error('テーブルの初期化に失敗しました')
     } finally {
       setLoading(false)
     }
@@ -175,33 +300,103 @@ export default function AdminProductsPage() {
     )
   }
 
-  return (
-    <div className="min-h-screen bg-gray-100">
-      <Toaster position="top-center" />
-      
-      {/* ヘッダー */}
-      <header className="bg-white shadow-sm">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex items-center justify-between h-16">
-            <div className="flex items-center">
-              <Link href="/admin" className="flex items-center gap-2 text-gray-600 hover:text-gray-900 mr-4">
-                <ArrowLeft size={20} />
-                <span>戻る</span>
-              </Link>
-              <h1 className="text-xl font-bold text-gray-900">サントリー製品管理</h1>
+  // テーブルが存在しない場合のセットアップ画面
+  if (!tableExists) {
+    return (
+      <div className="p-6">
+        <Toaster position="top-center" />
+        <div className="max-w-4xl mx-auto">
+          <div className="bg-white rounded-lg shadow p-8">
+            <div className="text-center mb-6">
+              <Package className="mx-auto text-gray-400 mb-4" size={64} />
+              <h2 className="text-2xl font-bold mb-4">製品テーブルの初期セットアップ</h2>
+              <p className="text-gray-600">
+                製品テーブルがまだ作成されていません。
+              </p>
             </div>
-            <button
-              onClick={() => setShowAddModal(true)}
-              className="bg-primary text-white px-4 py-2 rounded-lg hover:bg-primary-dark flex items-center gap-2"
-            >
-              <Plus size={20} />
-              製品を追加
-            </button>
+            
+            <div className="mb-6">
+              <h3 className="font-semibold mb-2">方法1: 自動セットアップ（推奨）</h3>
+              <button
+                onClick={initializeProductTable}
+                className="w-full bg-primary text-white px-6 py-3 rounded-lg hover:bg-primary-dark"
+              >
+                テーブルを初期化
+              </button>
+            </div>
+            
+            <div className="border-t pt-6">
+              <h3 className="font-semibold mb-2">方法2: 手動セットアップ（Supabase SQL Editor）</h3>
+              <p className="text-sm text-gray-600 mb-3">
+                下記のSQLをSupabaseのSQL Editorで実行してください：
+              </p>
+              <div className="bg-gray-100 p-4 rounded-lg overflow-x-auto">
+                <pre className="text-xs font-mono">
+{`CREATE TABLE IF NOT EXISTS suntory_products (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  brand_name VARCHAR(255) NOT NULL UNIQUE,
+  product_category VARCHAR(50) NOT NULL,
+  product_line VARCHAR(255),
+  is_active BOOLEAN DEFAULT true,
+  description TEXT,
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+  updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+);
+
+CREATE INDEX idx_suntory_products_brand_name ON suntory_products(brand_name);
+CREATE INDEX idx_suntory_products_category ON suntory_products(product_category);
+CREATE INDEX idx_suntory_products_active ON suntory_products(is_active);`}
+                </pre>
+              </div>
+              <button
+                onClick={() => {
+                  navigator.clipboard.writeText(`CREATE TABLE IF NOT EXISTS suntory_products (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  brand_name VARCHAR(255) NOT NULL UNIQUE,
+  product_category VARCHAR(50) NOT NULL,
+  product_line VARCHAR(255),
+  is_active BOOLEAN DEFAULT true,
+  description TEXT,
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+  updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+);
+
+CREATE INDEX idx_suntory_products_brand_name ON suntory_products(brand_name);
+CREATE INDEX idx_suntory_products_category ON suntory_products(product_category);
+CREATE INDEX idx_suntory_products_active ON suntory_products(is_active);`)
+                  toast.success('SQLをクリップボードにコピーしました')
+                }}
+                className="mt-3 text-sm text-primary hover:underline"
+              >
+                SQLをコピー
+              </button>
+            </div>
           </div>
         </div>
-      </header>
+      </div>
+    )
+  }
 
-      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+  return (
+    <div className="p-6">
+      <Toaster position="top-center" />
+      
+      {/* ページヘッダー */}
+      <div className="mb-8 flex items-center justify-between">
+        <div>
+          <h1 className="text-3xl font-bold text-gray-900">製品管理</h1>
+          <p className="text-gray-600 mt-2">サントリー製品の管理</p>
+        </div>
+        <button
+          onClick={() => setShowAddModal(true)}
+          className="bg-primary text-white px-4 py-2 rounded-lg hover:bg-primary-dark flex items-center gap-2"
+        >
+          <Plus size={20} />
+          製品を追加
+        </button>
+      </div>
+
+      <div>
         {/* フィルター */}
         <div className="bg-white rounded-lg shadow p-4 mb-6">
           <div className="flex flex-col sm:flex-row gap-4">
@@ -338,7 +533,7 @@ export default function AdminProductsPage() {
             </tbody>
           </table>
         </div>
-      </main>
+      </div>
 
       {/* 追加/編集モーダル */}
       {(showAddModal || showEditModal) && (

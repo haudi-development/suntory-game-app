@@ -177,7 +177,7 @@ export default function CapturePage() {
     <div className="min-h-screen bg-[var(--background)]">
       <div className="gradient-bg text-white p-4 mb-6">
         <div className="max-w-md mx-auto">
-          <h1 className="text-2xl font-bold text-center">飲み物を撮影</h1>
+          <h1 className="text-2xl font-bold text-center">飲み物を記録</h1>
           <p className="text-center text-sm mt-2 opacity-90">
             AIが自動で解析します
           </p>

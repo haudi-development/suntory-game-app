@@ -138,57 +138,17 @@ export default function AdminDashboard() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-100">
+    <div className="p-6">
       <Toaster position="top-center" />
       
-      {/* ヘッダー */}
-      <header className="bg-white shadow-sm">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-between items-center h-16">
-            <div className="flex items-center">
-              <h1 className="text-xl font-bold text-gray-900">
-                サントリー飲活 管理画面
-              </h1>
-            </div>
-            <button
-              onClick={handleLogout}
-              className="flex items-center gap-2 text-gray-600 hover:text-gray-900"
-            >
-              <LogOut size={20} />
-              <span>ログアウト</span>
-            </button>
-          </div>
-        </div>
-      </header>
-
-      {/* ナビゲーション */}
-      <nav className="bg-primary text-white">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex space-x-8 h-12 items-center">
-            <Link href="/admin" className="hover:text-accent">
-              ダッシュボード
-            </Link>
-            <Link href="/admin/users" className="hover:text-accent">
-              ユーザー管理
-            </Link>
-            <Link href="/admin/products" className="hover:text-accent">
-              製品管理
-            </Link>
-            <Link href="/admin/content" className="hover:text-accent">
-              コンテンツ管理
-            </Link>
-            <Link href="/admin/analytics" className="hover:text-accent">
-              分析
-            </Link>
-            <Link href="/admin/settings" className="hover:text-accent">
-              設定
-            </Link>
-          </div>
-        </div>
-      </nav>
+      {/* ページヘッダー */}
+      <div className="mb-8">
+        <h1 className="text-3xl font-bold text-gray-900">ダッシュボード</h1>
+        <p className="text-gray-600 mt-2">サントリー飲活アプリの管理画面</p>
+      </div>
 
       {/* メインコンテンツ */}
-      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      <div>
         {/* 統計カード */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
           <div className="bg-white rounded-lg shadow p-6">
@@ -322,7 +282,7 @@ export default function AdminDashboard() {
             </div>
           </Link>
         </div>
-      </main>
+      </div>
     </div>
   )
 }
