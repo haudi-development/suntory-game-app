@@ -34,8 +34,14 @@ export default function LoginPage() {
       } else {
         console.log('Login successful')
         toast.success('ログインしました！')
+        
+        // URLパラメータから元のページを取得
+        const params = new URLSearchParams(window.location.search)
+        const redirectTo = params.get('redirectedFrom') || '/'
+        
         setTimeout(() => {
-          router.push('/')
+          router.push(redirectTo)
+          router.refresh() // 重要：ページをリフレッシュ
         }, 1000)
       }
     } catch (error) {
