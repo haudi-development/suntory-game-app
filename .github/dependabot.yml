@@ -1,0 +1,44 @@
+version: 2
+updates:
+  # NPM packages
+  - package-ecosystem: "npm"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+      day: "monday"
+      time: "04:00"
+    open-pull-requests-limit: 10
+    reviewers:
+      - "haudi-development"
+    labels:
+      - "dependencies"
+      - "npm"
+    groups:
+      next:
+        patterns:
+          - "next"
+          - "@next/*"
+      supabase:
+        patterns:
+          - "@supabase/*"
+      storybook:
+        patterns:
+          - "@storybook/*"
+          - "storybook"
+    ignore:
+      # Major version updates that might have breaking changes
+      - dependency-name: "next"
+        update-types: ["version-update:semver-major"]
+      - dependency-name: "@supabase/supabase-js"
+        update-types: ["version-update:semver-major"]
+
+  # GitHub Actions
+  - package-ecosystem: "github-actions"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+      day: "monday"
+      time: "04:00"
+    labels:
+      - "dependencies"
+      - "github-actions"

@@ -2,21 +2,27 @@
 
 import { useState, useRef } from 'react'
 import { useRouter } from 'next/navigation'
-import { Camera, Upload, Loader2 } from 'lucide-react'
+import { Camera, Upload, Loader2, AlertCircle } from 'lucide-react'
 import toast from 'react-hot-toast'
 import { createClient } from '@/lib/supabase/client'
 import { motion, AnimatePresence } from 'framer-motion'
+import { uploadConsumptionImage, compressImage } from '@/lib/supabase/storage'
+import { ErrorHandler, handleOffline } from '@/lib/error-handler'
+import ManualSelectionModal from '@/components/capture/ManualSelectionModal'
 
 export default function CapturePage() {
   const [image, setImage] = useState<string | null>(null)
+  const [imageFile, setImageFile] = useState<File | null>(null)
   const [analyzing, setAnalyzing] = useState(false)
   const [analysis, setAnalysis] = useState<any>(null)
   const [points, setPoints] = useState(0)
+  const [showManualSelection, setShowManualSelection] = useState(false)
+  const [analysisError, setAnalysisError] = useState(false)
   const fileInputRef = useRef<HTMLInputElement>(null)
   const router = useRouter()
   const supabase = createClient()
 
-  const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleFileSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0]
     if (file) {
       if (file.size > 5 * 1024 * 1024) {
@@ -24,39 +30,64 @@ export default function CapturePage() {
         return
       }
 
+      // 画像を圧縮
+      const compressedFile = await compressImage(file)
+      setImageFile(compressedFile)
+
       const reader = new FileReader()
       reader.onloadend = () => {
         const base64 = reader.result as string
         setImage(base64)
         analyzeImage(base64.split(',')[1])
       }
-      reader.readAsDataURL(file)
+      reader.readAsDataURL(compressedFile)
     }
   }
 
   const analyzeImage = async (base64: string) => {
+    if (handleOffline()) return
+    
     setAnalyzing(true)
+    setAnalysisError(false)
+    
     try {
-      const response = await fetch('/api/analyze-image', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ imageBase64: base64 }),
-      })
-
-      if (!response.ok) {
-        throw new Error('Analysis failed')
-      }
+      const response = await ErrorHandler.retry(async () => {
+        const res = await fetch('/api/analyze-image', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ imageBase64: base64 }),
+        })
+        
+        if (!res.ok) {
+          throw new Error('Analysis failed')
+        }
+        
+        return res
+      }, 2, 2000)
 
       const data = await response.json()
       setAnalysis(data.analysis)
       setPoints(data.points)
       toast.success('画像を解析しました！')
     } catch (error) {
-      toast.error('画像解析に失敗しました')
-      console.error(error)
+      const appError = ErrorHandler.handle(error)
+      ErrorHandler.notify(appError)
+      setAnalysisError(true)
+      
+      // エラー時は手動選択を促す
+      setTimeout(() => {
+        setShowManualSelection(true)
+      }, 2000)
     } finally {
       setAnalyzing(false)
     }
+  }
+
+  const handleManualSelect = (product: any) => {
+    setAnalysis(product)
+    setPoints(product.points_per_unit || 10)
+    setAnalysisError(false)
+    toast.success('商品を選択しました')
   }
 
   const saveRecord = async () => {
@@ -75,17 +106,37 @@ export default function CapturePage() {
         return
       }
 
-      const { error } = await supabase.from('consumptions').insert({
-        user_id: user.id,
-        brand_name: analysis.brand_name,
-        product_type: analysis.product_type,
-        volume_ml: analysis.volume_ml,
-        quantity: analysis.quantity,
-        points_earned: points,
-        ai_analysis: analysis,
-      } as any)
+      // 消費記録を作成
+      const { data: consumptionData, error } = await supabase
+        .from('consumptions')
+        .insert({
+          user_id: user.id,
+          brand_name: analysis.brand_name,
+          product_type: analysis.product_type,
+          volume_ml: analysis.volume_ml,
+          quantity: analysis.quantity,
+          points_earned: points,
+          ai_analysis: analysis,
+        } as any)
+        .select()
+        .single()
 
       if (error) throw error
+
+      // 画像をStorageにアップロード
+      if (imageFile && consumptionData) {
+        const uploadResult = await uploadConsumptionImage({
+          file: imageFile,
+          userId: user.id,
+          consumptionId: consumptionData.id
+        })
+
+        if (uploadResult.success) {
+          toast.success('画像を保存しました')
+        } else {
+          console.error('Image upload failed:', uploadResult.error)
+        }
+      }
 
       // キャラクター解放チェック
       const characterUnlockMap: Record<string, string> = {
@@ -279,6 +330,7 @@ export default function CapturePage() {
                       <button
                         onClick={() => {
                           setImage(null)
+                          setImageFile(null)
                           setAnalysis(null)
                           setPoints(0)
                         }}
@@ -297,6 +349,7 @@ export default function CapturePage() {
                         <button
                           onClick={() => {
                             setImage(null)
+                            setImageFile(null)
                             setAnalysis(null)
                             setPoints(0)
                           }}
@@ -330,6 +383,26 @@ export default function CapturePage() {
           </AnimatePresence>
         )}
 
+        {analysisError && !analyzing && (
+          <div className="card bg-yellow-50 border-yellow-200">
+            <div className="flex items-start space-x-3">
+              <AlertCircle className="w-5 h-5 text-yellow-600 flex-shrink-0 mt-0.5" />
+              <div className="flex-1">
+                <h3 className="font-semibold text-yellow-800">解析に失敗しました</h3>
+                <p className="text-sm text-yellow-700 mt-1">
+                  画像から商品を特定できませんでした。手動で商品を選択してください。
+                </p>
+                <button
+                  onClick={() => setShowManualSelection(true)}
+                  className="mt-3 px-4 py-2 bg-yellow-600 text-white rounded-lg hover:bg-yellow-700 transition-colors text-sm font-medium"
+                >
+                  商品を手動で選択
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+
         <div className="mt-6 card">
           <h3 className="font-bold mb-2">撮影のコツ</h3>
           <ul className="text-sm text-gray-600 space-y-1">
@@ -339,6 +412,12 @@ export default function CapturePage() {
           </ul>
         </div>
       </div>
+
+      <ManualSelectionModal
+        isOpen={showManualSelection}
+        onClose={() => setShowManualSelection(false)}
+        onSelect={handleManualSelect}
+      />
     </div>
   )
 }

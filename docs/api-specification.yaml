@@ -1,0 +1,255 @@
+openapi: 3.0.0
+info:
+  title: Suntory Gamification App API
+  version: 1.0.0
+  description: サントリー飲食体験ゲーミフィケーションアプリのAPI仕様書
+  contact:
+    name: Development Team
+    email: dev@example.com
+
+servers:
+  - url: http://localhost:3000/api
+    description: Development server
+  - url: https://suntory-game-app.vercel.app/api
+    description: Production server
+
+tags:
+  - name: Analysis
+    description: 画像解析関連
+  - name: User
+    description: ユーザー管理
+  - name: Setup
+    description: セットアップ・デモデータ
+
+paths:
+  /analyze-image:
+    post:
+      tags:
+        - Analysis
+      summary: 飲料画像をAIで解析
+      description: OpenAI Vision APIを使用して飲料画像を解析し、商品情報とポイントを返す
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - imageBase64
+              properties:
+                imageBase64:
+                  type: string
+                  description: Base64エンコードされた画像データ（データURLのプレフィックスなし）
+                  example: "/9j/4AAQSkZJRgABAQEA..."
+      responses:
+        '200':
+          description: 解析成功
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  analysis:
+                    $ref: '#/components/schemas/AnalysisResult'
+                  points:
+                    type: integer
+                    description: 獲得ポイント（サントリー製品のみ）
+                    example: 30
+        '400':
+          description: リクエストエラー
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '500':
+          description: サーバーエラー
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /create-test-user:
+    post:
+      tags:
+        - User
+      summary: テストユーザーを作成
+      description: 開発・テスト用のユーザーアカウントを作成
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - email
+                - password
+              properties:
+                email:
+                  type: string
+                  format: email
+                  example: "test@example.com"
+                password:
+                  type: string
+                  minLength: 6
+                  example: "password123"
+                nickname:
+                  type: string
+                  example: "テストユーザー"
+      responses:
+        '200':
+          description: ユーザー作成成功
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  user:
+                    type: object
+                    properties:
+                      id:
+                        type: string
+                        format: uuid
+                      email:
+                        type: string
+                        format: email
+        '400':
+          description: バリデーションエラー
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '409':
+          description: ユーザー既存エラー
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /setup-demo:
+    post:
+      tags:
+        - Setup
+      summary: デモデータをセットアップ
+      description: デモ用のダミーデータ（ユーザー、消費記録、ランキング等）を生成
+      security:
+        - BearerAuth: []
+      responses:
+        '200':
+          description: セットアップ成功
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  message:
+                    type: string
+                    example: "Demo data setup completed"
+                  stats:
+                    type: object
+                    properties:
+                      users:
+                        type: integer
+                        example: 50
+                      consumptions:
+                        type: integer
+                        example: 500
+                      badges:
+                        type: integer
+                        example: 150
+        '401':
+          description: 認証エラー
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '500':
+          description: サーバーエラー
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+components:
+  schemas:
+    AnalysisResult:
+      type: object
+      properties:
+        brand_name:
+          type: string
+          description: 商品名
+          example: "ザ・プレミアム・モルツ"
+        product_type:
+          type: string
+          description: 商品タイプ
+          enum:
+            - draft_beer
+            - highball
+            - sour
+            - gin_soda
+            - non_alcohol
+            - water
+            - other
+          example: "draft_beer"
+        container:
+          type: string
+          description: 容器タイプ
+          enum:
+            - jug
+            - glass
+            - can
+            - bottle
+          example: "jug"
+        volume_ml:
+          type: integer
+          description: 推定容量（ml）
+          example: 500
+        quantity:
+          type: integer
+          description: 数量
+          example: 1
+        confidence:
+          type: number
+          format: float
+          description: 信頼度（0-1）
+          minimum: 0
+          maximum: 1
+          example: 0.95
+        is_suntory:
+          type: boolean
+          description: サントリー製品かどうか
+          example: true
+        error_message:
+          type: string
+          description: エラーメッセージ（エラー時のみ）
+          example: null
+
+    Error:
+      type: object
+      properties:
+        error:
+          type: string
+          description: エラーメッセージ
+          example: "Failed to analyze image"
+        details:
+          type: object
+          description: 詳細情報（オプション）
+        code:
+          type: string
+          description: エラーコード（オプション）
+          example: "ANALYSIS_ERROR"
+
+  securitySchemes:
+    BearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+      description: Supabaseの認証トークン
