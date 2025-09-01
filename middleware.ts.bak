@@ -1,0 +1,50 @@
+import { createMiddlewareClient } from '@supabase/auth-helpers-nextjs'
+import { NextResponse } from 'next/server'
+import type { NextRequest } from 'next/server'
+
+export async function middleware(req: NextRequest) {
+  const res = NextResponse.next()
+  const supabase = createMiddlewareClient({ req, res })
+  
+  const { data: { session } } = await supabase.auth.getSession()
+  
+  // 管理画面へのアクセス制御
+  if (req.nextUrl.pathname.startsWith('/admin')) {
+    if (!session) {
+      return NextResponse.redirect(new URL('/login', req.url))
+    }
+    
+    // ロールチェック
+    const { data: userRole } = await supabase
+      .from('user_roles')
+      .select('role')
+      .eq('user_id', session.user.id)
+      .single()
+    
+    if (!userRole || (userRole.role !== 'admin' && userRole.role !== 'moderator')) {
+      return NextResponse.redirect(new URL('/unauthorized', req.url))
+    }
+  }
+  
+  // 認証が必要なページ
+  const protectedPaths = ['/profile', '/capture', '/leaderboard']
+  const isProtectedPath = protectedPaths.some(path => 
+    req.nextUrl.pathname.startsWith(path)
+  )
+  
+  if (isProtectedPath && !session) {
+    return NextResponse.redirect(new URL('/login', req.url))
+  }
+  
+  return res
+}
+
+export const config = {
+  matcher: [
+    '/admin/:path*',
+    '/profile',
+    '/profile/:path*', 
+    '/capture',
+    '/leaderboard'
+  ]
+}
