@@ -31,6 +31,14 @@ export default function VenuePage() {
 
   return (
     <div className="min-h-screen bg-[var(--background)] pb-20">
+      {/* ロゴ */}
+      <div className="absolute top-4 left-4 z-50">
+        <div className="bg-white/90 backdrop-blur-sm px-3 py-2 rounded-full shadow-lg">
+          <span className="text-sm font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
+            KANPAI! by Suntory
+          </span>
+        </div>
+      </div>
       <div className="gradient-bg text-white p-4 mb-6">
         <div className="max-w-md mx-auto">
           <h1 className="text-2xl font-bold text-center">提携店舗</h1>

@@ -107,6 +107,15 @@ export default function HomePage() {
       <Toaster position="top-center" />
       
       
+      {/* ロゴ */}
+      <div className="absolute top-4 left-4 z-50">
+        <div className="bg-white/90 backdrop-blur-sm px-3 py-2 rounded-full shadow-lg">
+          <span className="text-sm font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
+            KANPAI! by Suntory
+          </span>
+        </div>
+      </div>
+
       {/* ヘッダー */}
       <div className="relative overflow-hidden bg-gradient-to-br from-blue-400 to-purple-600">
         <div className="absolute inset-0">
