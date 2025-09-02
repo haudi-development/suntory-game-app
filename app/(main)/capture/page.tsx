@@ -2,13 +2,15 @@
 
 import { useState, useRef, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
-import { Camera, Upload, Loader2, AlertCircle } from 'lucide-react'
+import { Camera, Upload, Loader2, AlertCircle, Edit, MapPin } from 'lucide-react'
 import toast from 'react-hot-toast'
 import { createClient } from '@/lib/supabase/client'
 import { motion, AnimatePresence } from 'framer-motion'
 import { uploadConsumptionImage, compressImage } from '@/lib/supabase/storage'
 import { ErrorHandler, handleOffline } from '@/lib/error-handler'
 import ManualSelectionModal from '@/components/capture/ManualSelectionModal'
+import RecordEditModal from '@/components/capture/RecordEditModal'
+import { useCheckIn } from '@/contexts/CheckInContext'
 
 export default function CapturePage() {
   const [image, setImage] = useState<string | null>(null)
@@ -17,10 +19,12 @@ export default function CapturePage() {
   const [analysis, setAnalysis] = useState<any>(null)
   const [points, setPoints] = useState(0)
   const [showManualSelection, setShowManualSelection] = useState(false)
+  const [showEditModal, setShowEditModal] = useState(false)
   const [analysisError, setAnalysisError] = useState(false)
   const fileInputRef = useRef<HTMLInputElement>(null)
   const router = useRouter()
   const supabase = createClient()
+  const { currentCheckIn, venueMenus, isCheckedIn } = useCheckIn()
 
   // ページ読み込み時に認証チェック
   useEffect(() => {
@@ -100,6 +104,14 @@ export default function CapturePage() {
     setPoints(product.points_per_unit || 10)
     setAnalysisError(false)
     toast.success('商品を選択しました')
+  }
+
+  const handleEditSave = (editedRecord: any) => {
+    setAnalysis({
+      ...analysis,
+      ...editedRecord
+    })
+    toast.success('記録を更新しました')
   }
 
   const saveRecord = async () => {
@@ -242,10 +254,22 @@ export default function CapturePage() {
         <div className="max-w-md mx-auto">
           <h1 className="text-2xl font-bold text-center">飲み物を記録</h1>
           <p className="text-center text-sm mt-2 opacity-90">
-            AIが自動で解析します
+            {isCheckedIn ? '店舗メニューから選択できます' : 'AIが自動で解析します'}
           </p>
         </div>
       </div>
+
+      {/* チェックイン状態表示 */}
+      {isCheckedIn && currentCheckIn && (
+        <div className="bg-green-50 border-b border-green-200 p-3 mb-4">
+          <div className="max-w-md mx-auto flex items-center gap-2 text-green-700">
+            <MapPin className="w-4 h-4" />
+            <span className="text-sm font-medium">
+              {currentCheckIn.venue?.name}にチェックイン中
+            </span>
+          </div>
+        </div>
+      )}
 
       <div className="max-w-md mx-auto px-4">
         <input
@@ -309,16 +333,28 @@ export default function CapturePage() {
                       </div>
                     )}
 
-                    <div className={`${analysis.is_suntory !== false ? 'bg-primary/10' : 'bg-gray-100'} p-3 rounded-lg`}>
-                      <h3 className={`font-bold ${analysis.is_suntory !== false ? 'text-primary-dark' : 'text-gray-700'} mb-2`}>
-                        解析結果
-                      </h3>
+                    <div className={`${analysis.is_suntory !== false ? 'bg-primary/10' : 'bg-gray-100'} p-3 rounded-lg relative`}>
+                      <div className="flex items-start justify-between mb-2">
+                        <h3 className={`font-bold ${analysis.is_suntory !== false ? 'text-primary-dark' : 'text-gray-700'}`}>
+                          解析結果
+                        </h3>
+                        <button
+                          onClick={() => setShowEditModal(true)}
+                          className="p-1.5 hover:bg-white/50 rounded-lg transition-colors"
+                          title="編集"
+                        >
+                          <Edit className="w-4 h-4 text-gray-600" />
+                        </button>
+                      </div>
                       <div className="space-y-1 text-sm">
                         <p><span className="font-medium">商品:</span> {analysis.brand_name}</p>
                         <p><span className="font-medium">種類:</span> {analysis.product_type}</p>
                         <p><span className="font-medium">容量:</span> {analysis.volume_ml}ml</p>
                         <p><span className="font-medium">数量:</span> {analysis.quantity}本</p>
-                        <p><span className="font-medium">信頼度:</span> {Math.round(analysis.confidence * 100)}%</p>
+                        {analysis.container && (
+                          <p><span className="font-medium">容器:</span> {analysis.container}</p>
+                        )}
+                        <p><span className="font-medium">信頼度:</span> {Math.round((analysis.confidence || 1) * 100)}%</p>
                         {analysis.is_suntory !== undefined && (
                           <p>
                             <span className="font-medium">サントリー製品:</span>{' '}
@@ -429,6 +465,15 @@ export default function CapturePage() {
         isOpen={showManualSelection}
         onClose={() => setShowManualSelection(false)}
         onSelect={handleManualSelect}
+      />
+
+      <RecordEditModal
+        isOpen={showEditModal}
+        onClose={() => setShowEditModal(false)}
+        onSave={handleEditSave}
+        initialData={analysis || {}}
+        venueMenus={venueMenus}
+        isRestaurantMode={isCheckedIn}
       />
     </div>
   )
