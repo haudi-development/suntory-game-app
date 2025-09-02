@@ -210,6 +210,48 @@ export default function SetupPage() {
     }
   }
 
+  const fixVenues = async () => {
+    setLoading(true)
+    setResults([])
+    const logs: string[] = []
+
+    try {
+      logs.push('🔄 Venues修正SQLを生成中...')
+      
+      const response = await fetch('/api/fix-venues', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+      })
+      
+      const result = await response.json()
+      console.log('Fix venues response:', result)
+      
+      if (result.sql) {
+        logs.push('📋 以下のSQLをSupabaseダッシュボードで実行してください:')
+        logs.push('━━━━━━━━━━━━━━━━━━━━━━━━━━━━')
+        if (result.steps && Array.isArray(result.steps)) {
+          result.steps.forEach((step: string) => logs.push(step))
+        }
+        logs.push('━━━━━━━━━━━━━━━━━━━━━━━━━━━━')
+        logs.push('SQL:')
+        logs.push('```sql')
+        // SQLを改行ごとに分割して表示
+        const sqlLines = result.sql.split('\n')
+        sqlLines.forEach((line: string) => logs.push(line))
+        logs.push('```')
+      } else {
+        logs.push('⚠️ SQLの生成に失敗しました')
+        logs.push(JSON.stringify(result, null, 2))
+      }
+    } catch (error) {
+      console.error('Fix venues error:', error)
+      logs.push(`❌ エラー: ${error instanceof Error ? error.message : 'Unknown error'}`)
+    } finally {
+      setResults(logs)
+      setLoading(false)
+    }
+  }
+
   const createTables = async () => {
     setLoading(true)
     setResults([])
@@ -294,6 +336,14 @@ export default function SetupPage() {
               className="px-6 py-3 bg-green-600 text-white rounded-lg hover:bg-green-700 disabled:opacity-50"
             >
               {loading ? '生成中...' : 'テーブル作成SQL生成'}
+            </button>
+            
+            <button
+              onClick={fixVenues}
+              disabled={loading}
+              className="px-6 py-3 bg-purple-600 text-white rounded-lg hover:bg-purple-700 disabled:opacity-50"
+            >
+              {loading ? '生成中...' : 'Venues修正SQL生成'}
             </button>
           </div>
         </div>
