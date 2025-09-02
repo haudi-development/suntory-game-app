@@ -16,7 +16,8 @@ import {
   X,
   ChevronLeft,
   Bug,
-  Star
+  Star,
+  MapPin
 } from 'lucide-react'
 
 interface AdminLayoutProps {
@@ -71,6 +72,12 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
       label: 'ユーザー管理',
       icon: Users,
       active: pathname === '/admin/users'
+    },
+    {
+      href: '/admin/venues',
+      label: '店舗管理',
+      icon: MapPin,
+      active: pathname === '/admin/venues'
     },
     {
       href: '/admin/products',

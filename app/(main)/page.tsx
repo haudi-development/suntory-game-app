@@ -171,17 +171,24 @@ export default function HomePage() {
           </div>
 
           {/* 選択中のキャラクター */}
-          {profile?.selected_character && (
-            <div className="flex items-center justify-center py-3">
-              <motion.div
-                animate={{ y: [0, -5, 0] }}
-                transition={{ duration: 2, repeat: Infinity }}
-                className="relative"
-              >
-                <CharacterPlaceholder 
-                  character={profile.selected_character}
-                  size={80}
-                />
+          <div className="flex items-center justify-center py-3">
+            <motion.div
+              animate={{ y: [0, -5, 0] }}
+              transition={{ duration: 2, repeat: Infinity }}
+              className="relative"
+            >
+              <div className="w-20 h-20 bg-gradient-to-br from-blue-100 to-purple-100 rounded-full flex items-center justify-center shadow-lg">
+                <span className="text-4xl">
+                  {profile?.selected_character === 'premol' ? '🍺' :
+                   profile?.selected_character === 'kakuhai' ? '🥃' :
+                   profile?.selected_character === 'midori' ? '🍸' :
+                   profile?.selected_character === 'lemon' ? '🍋' :
+                   profile?.selected_character === 'allfree' ? '🍻' :
+                   profile?.selected_character === 'tennensui' ? '💧' :
+                   '🎮'}
+                </span>
+              </div>
+              {profile?.selected_character && (
                 <div className="absolute -bottom-1 left-1/2 -translate-x-1/2 bg-gradient-to-r from-blue-500 to-purple-500 text-white px-2 py-0.5 rounded-full shadow-sm">
                   <span className="text-xs font-semibold">
                     {profile.selected_character === 'premol' ? 'プレモルくん' :
@@ -193,9 +200,9 @@ export default function HomePage() {
                      profile.selected_character}
                   </span>
                 </div>
-              </motion.div>
-            </div>
-          )}
+              )}
+            </motion.div>
+          </div>
 
           {/* クイックスタッツ */}
           <div className="grid grid-cols-2 gap-2">

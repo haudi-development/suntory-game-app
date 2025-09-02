@@ -3,11 +3,11 @@
 import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
-import Character from '@/components/game/Character'
 import { CHARACTERS } from '@/lib/characters'
-import { LogOut, Award, Calendar } from 'lucide-react'
+import { LogOut, Award, Calendar, Check, Sparkles } from 'lucide-react'
 import Link from 'next/link'
-import toast from 'react-hot-toast'
+import toast, { Toaster } from 'react-hot-toast'
+import { motion } from 'framer-motion'
 
 const BADGES = [
   { id: 'first_drink', name: 'はじめての一杯', icon: '🍺', description: '初回記録' },
@@ -21,6 +21,15 @@ const BADGES = [
   { id: 'variety', name: 'バラエティ飲み', icon: '🌈', description: '10種類制覇' },
   { id: 'legend', name: 'レジェンド', icon: '👑', description: '総ポイント1000' },
 ]
+
+const characterEmojis: Record<string, string> = {
+  premol: '🍺',
+  kakuhai: '🥃',
+  midori: '🍸',
+  lemon: '🍋',
+  allfree: '🍻',
+  tennensui: '💧',
+}
 
 export default function ProfilePage() {
   const [user, setUser] = useState<any>(null)
@@ -69,6 +78,8 @@ export default function ProfilePage() {
   }
 
   const handleCharacterSelect = async (characterId: string) => {
+    if (profile?.selected_character === characterId) return
+    
     try {
       const { error } = await supabase
         .from('profiles')
@@ -78,7 +89,7 @@ export default function ProfilePage() {
       if (error) throw error
 
       setProfile({ ...profile, selected_character: characterId })
-      toast.success('キャラクターを変更しました')
+      toast.success(`キャラクターを変更しました！`)
     } catch (error) {
       toast.error('変更に失敗しました')
       console.error(error)
@@ -95,63 +106,98 @@ export default function ProfilePage() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50">
+      <Toaster position="top-center" />
+      
+      {/* 固定ロゴ */}
+      <div className="fixed top-4 left-4 z-50 bg-white/90 backdrop-blur-sm rounded-full px-4 py-2 shadow-lg">
+        <div className="text-sm font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
+          KANPAI! by Suntory
+        </div>
+      </div>
+      
       {/* ヘッダー */}
       <div className="relative overflow-hidden bg-gradient-to-br from-blue-400 to-purple-600">
         <div className="absolute inset-0">
           <div className="absolute top-10 left-10 w-32 h-32 bg-yellow-400 rounded-full opacity-20 blur-xl animate-pulse" />
-          <div className="absolute bottom-10 right-10 w-40 h-40 bg-blue-400 rounded-full opacity-20 blur-xl animate-pulse" />
+          <div className="absolute bottom-10 right-10 w-40 h-40 bg-pink-400 rounded-full opacity-20 blur-xl animate-pulse" />
         </div>
         
-        <div className="relative z-10 px-4 pt-6 pb-16">
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            className="text-center text-white"
-          >
-            <div className="flex justify-between items-center mb-4">
-              <div className="text-xs font-semibold text-white/80">KANPAI! by Suntory</div>
-              <motion.button
-                whileHover={{ scale: 1.05 }}
-                whileTap={{ scale: 0.95 }}
-                onClick={handleLogout}
-                className="flex items-center gap-1 text-sm bg-white/20 px-3 py-1.5 rounded-full hover:bg-white/30 transition-colors"
-              >
-                <LogOut size={14} />
-                ログアウト
-              </motion.button>
-            </div>
-            
-            <h1 className="text-2xl font-bold mb-4">マイページ</h1>
-            
-            <div className="bg-white/20 backdrop-blur-md rounded-2xl p-4">
-              <p className="text-2xl font-bold">{profile?.nickname || 'ユーザー'}さん</p>
-              <p className="text-lg mt-2">
-                <span className="text-yellow-300 font-bold">{profile?.total_points || 0}</span> pt
-              </p>
-              <div className="text-sm text-white/80 mt-2">
-                Lv.{Math.floor((profile?.total_points || 0) / 100) + 1}
-              </div>
-            </div>
-          </motion.div>
-        </div>
+        <motion.div
+          initial={{ opacity: 0, y: -20 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="relative z-10 p-6 text-white"
+        >
+          <div className="text-center">
+            <div className="text-xs font-semibold text-white/80 mb-2">KANPAI! by Suntory</div>
+            <h1 className="text-3xl font-bold mb-2">マイページ</h1>
+            <p className="text-white/80">あなたの飲活記録</p>
+          </div>
+        </motion.div>
       </div>
 
-      <div className="max-w-md mx-auto px-4 -mt-8 relative z-20 pb-24">
+      <div className="max-w-md mx-auto px-4 -mt-8 relative z-20">
+        {/* プロフィールカード */}
+        <motion.div
+          initial={{ opacity: 0, y: 40 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="bg-white rounded-3xl p-6 shadow-xl mb-6"
+        >
+          <div className="flex items-center justify-between mb-4">
+            <div className="flex items-center gap-4">
+              <div className="w-16 h-16 bg-gradient-to-br from-blue-400 to-purple-600 rounded-full flex items-center justify-center text-white text-2xl font-bold shadow-lg">
+                {profile?.display_name?.[0] || user?.email?.[0] || 'U'}
+              </div>
+              <div>
+                <h2 className="text-xl font-bold">{profile?.display_name || profile?.nickname || 'ユーザー'}</h2>
+                <p className="text-sm text-gray-500">{user?.email}</p>
+              </div>
+            </div>
+            <button
+              onClick={handleLogout}
+              className="p-2 text-gray-500 hover:text-red-500 transition-colors"
+            >
+              <LogOut size={20} />
+            </button>
+          </div>
+
+          <div className="grid grid-cols-3 gap-4 mb-4">
+            <div className="text-center p-3 bg-gradient-to-br from-blue-50 to-blue-100 rounded-2xl">
+              <p className="text-2xl font-bold text-blue-600">{profile?.total_points || 0}</p>
+              <p className="text-xs text-gray-600">総ポイント</p>
+            </div>
+            <div className="text-center p-3 bg-gradient-to-br from-purple-50 to-purple-100 rounded-2xl">
+              <p className="text-2xl font-bold text-purple-600">
+                Lv.{Math.floor((profile?.total_points || 0) / 100) + 1}
+              </p>
+              <p className="text-xs text-gray-600">レベル</p>
+            </div>
+            <div className="text-center p-3 bg-gradient-to-br from-green-50 to-green-100 rounded-2xl">
+              <p className="text-2xl font-bold text-green-600">{userBadges.length}</p>
+              <p className="text-xs text-gray-600">バッジ</p>
+            </div>
+          </div>
+        </motion.div>
+
+        {/* キャラクターコレクション */}
         <motion.div
           initial={{ opacity: 0, y: 40 }}
           animate={{ opacity: 1, y: 0 }}
           className="bg-white rounded-3xl p-6 shadow-xl mb-6"
         >
           <div className="flex justify-between items-center mb-4">
-            <h2 className="text-lg font-bold flex items-center gap-2 text-primary-dark">
-              <span>🎮</span> キャラクターコレクション
+            <h2 className="text-lg font-bold flex items-center gap-2">
+              <Sparkles className="text-yellow-500" size={20} />
+              <span className="bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
+                キャラクターコレクション
+              </span>
             </h2>
-            <Link href="/characters" className="text-sm text-primary hover:text-primary-dark font-medium hover:underline">
+            <Link href="/characters" className="text-sm text-blue-600 hover:text-blue-700 font-medium">
               図鑑を見る →
             </Link>
           </div>
-          <div className="grid grid-cols-3 gap-4">
-            {CHARACTERS.map(character => {
+          
+          <div className="grid grid-cols-3 gap-3">
+            {CHARACTERS.map((character, index) => {
               const userData = userCharacters.find(
                 c => c.character_type === character.id
               ) || { level: 1, exp: 0 }
@@ -160,45 +206,69 @@ export default function ProfilePage() {
               return (
                 <motion.div 
                   key={character.id}
+                  initial={{ opacity: 0, scale: 0.8 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  transition={{ delay: index * 0.05 }}
                   whileHover={{ scale: 1.05 }}
                   whileTap={{ scale: 0.95 }}
-                  className={`text-center cursor-pointer transition-all duration-300 rounded-2xl ${
-                    isSelected ? 'ring-2 ring-primary bg-primary/10 p-2 shadow-md' : 'p-2 hover:bg-gray-50'
+                  className={`relative text-center cursor-pointer transition-all duration-300 rounded-2xl ${
+                    isSelected 
+                      ? 'ring-2 ring-offset-2 ring-blue-500 bg-gradient-to-br from-blue-50 to-purple-50 p-3 shadow-lg' 
+                      : 'p-3 hover:bg-gray-50 bg-white border border-gray-200'
                   }`}
                   onClick={() => handleCharacterSelect(character.id)}
                 >
-                  <div className="w-full aspect-square flex items-center justify-center">
-                    <Character
-                      character={character}
-                      level={userData.level}
-                      exp={userData.exp}
-                      isSelected={isSelected}
-                      showDetails={false}
-                    />
-                  </div>
-                  <p className="text-xs mt-1 font-medium truncate">{character.name}</p>
-                  <p className="text-xs text-gray-500">Lv.{userData.level}</p>
                   {isSelected && (
-                    <div className="mt-1 bg-green-500 text-white text-xs px-2 py-0.5 rounded-full">
-                      使用中
-                    </div>
+                    <motion.div 
+                      initial={{ scale: 0 }}
+                      animate={{ scale: 1 }}
+                      className="absolute -top-2 -right-2 bg-blue-500 text-white rounded-full p-1 z-10"
+                    >
+                      <Check size={14} />
+                    </motion.div>
                   )}
+                  
+                  <div className="w-full aspect-square flex items-center justify-center mb-2">
+                    <div className={`w-16 h-16 rounded-full flex items-center justify-center ${
+                      isSelected 
+                        ? 'bg-gradient-to-br from-blue-200 to-purple-200' 
+                        : 'bg-gradient-to-br from-gray-100 to-gray-200'
+                    }`}>
+                      <span className="text-3xl">{characterEmojis[character.id] || '🎮'}</span>
+                    </div>
+                  </div>
+                  
+                  <p className="text-xs font-bold truncate">{character.name}</p>
+                  <p className="text-xs text-gray-500">Lv.{userData.level}</p>
+                  
+                  <div className="mt-1">
+                    <div className="h-1 bg-gray-200 rounded-full overflow-hidden">
+                      <div 
+                        className="h-full bg-gradient-to-r from-blue-400 to-purple-500"
+                        style={{ width: `${Math.min(100, userData.exp)}%` }}
+                      />
+                    </div>
+                  </div>
                 </motion.div>
               )
             })}
           </div>
         </motion.div>
 
+        {/* バッジコレクション */}
         <motion.div
           initial={{ opacity: 0, y: 40 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.1 }}
           className="bg-white rounded-3xl p-6 shadow-xl mb-6"
         >
-          <h2 className="text-lg font-bold mb-4 flex items-center gap-2 text-primary-dark">
-            <Award size={20} />
-            称号・バッジ
+          <h2 className="text-lg font-bold mb-4 flex items-center gap-2">
+            <Award className="text-yellow-500" size={20} />
+            <span className="bg-gradient-to-r from-yellow-500 to-orange-500 bg-clip-text text-transparent">
+              称号・バッジ
+            </span>
           </h2>
+          
           <div className="grid grid-cols-4 gap-3">
             {BADGES.map((badge, index) => {
               const earned = userBadges.includes(badge.id)
@@ -223,24 +293,31 @@ export default function ProfilePage() {
           </div>
         </motion.div>
 
+        {/* アクティビティ */}
         <motion.div
           initial={{ opacity: 0, y: 40 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.2 }}
-          className="bg-white rounded-3xl p-6 shadow-xl"
+          className="bg-white rounded-3xl p-6 shadow-xl mb-24"
         >
-          <h2 className="text-lg font-bold mb-4 flex items-center gap-2 text-primary-dark">
-            <Calendar size={20} />
-            統計
+          <h2 className="text-lg font-bold mb-4 flex items-center gap-2">
+            <Calendar className="text-green-500" size={20} />
+            <span className="bg-gradient-to-r from-green-500 to-emerald-500 bg-clip-text text-transparent">
+              最近のアクティビティ
+            </span>
           </h2>
-          <div className="grid grid-cols-2 gap-4">
-            <div className="bg-gradient-to-br from-blue-50 to-blue-100 p-4 rounded-2xl border border-blue-200">
-              <p className="text-sm text-blue-700 font-medium">総記録数</p>
-              <p className="text-2xl font-bold text-blue-800 mt-1">0</p>
-            </div>
-            <div className="bg-gradient-to-br from-purple-50 to-purple-100 p-4 rounded-2xl border border-purple-200">
-              <p className="text-sm text-purple-700 font-medium">今月の記録</p>
-              <p className="text-2xl font-bold text-purple-800 mt-1">0</p>
+          
+          <div className="space-y-3">
+            <div className="flex items-center gap-3 p-3 bg-gray-50 rounded-xl">
+              <div className="text-2xl">🍺</div>
+              <div className="flex-1">
+                <p className="text-sm font-medium">プレミアムモルツを記録</p>
+                <p className="text-xs text-gray-500">銀座プレモルテラス</p>
+              </div>
+              <div className="text-right">
+                <p className="text-sm font-bold text-green-600">+50pt</p>
+                <p className="text-xs text-gray-500">2時間前</p>
+              </div>
             </div>
           </div>
         </motion.div>
