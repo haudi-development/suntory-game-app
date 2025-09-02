@@ -235,10 +235,13 @@ export default function LeaderboardPage() {
           ) : rankings.length === 0 ? (
             <div className="text-center text-gray-500 py-8">
               まだランキングデータがありません
+              {console.log('No rankings to display. Rankings array:', rankings)}
             </div>
           ) : (
             <div className="space-y-3">
+              {console.log('Rendering rankings:', rankings)}
               {rankings.map((user, index) => {
+                console.log(`Rendering user ${index}:`, user)
                 const isMe = user.user_id === currentUser?.id
                 const points = getPoints(user)
                 
@@ -261,7 +264,7 @@ export default function LeaderboardPage() {
                       </div>
                       <div>
                         <p className="font-medium flex items-center gap-1">
-                          {user.nickname || 'ユーザー'}
+                          {user.display_name || user.nickname || 'ユーザー'}
                           {isMe && <span className="text-xs bg-primary text-white px-1 rounded">YOU</span>}
                         </p>
                         <p className="text-xs text-gray-500">
