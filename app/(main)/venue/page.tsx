@@ -39,7 +39,7 @@ export default function VenuePage() {
           </span>
         </div>
       </div>
-      <div className="gradient-bg text-white p-4 mb-6">
+      <div className="gradient-bg text-white pt-16 px-4 pb-4 mb-6">
         <div className="max-w-md mx-auto">
           <h1 className="text-2xl font-bold text-center">提携店舗</h1>
           <p className="text-center text-sm mt-2 opacity-90">

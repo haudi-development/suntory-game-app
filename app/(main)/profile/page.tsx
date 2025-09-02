@@ -136,7 +136,7 @@ export default function ProfilePage() {
         <motion.div
           initial={{ opacity: 0, y: -20 }}
           animate={{ opacity: 1, y: 0 }}
-          className="relative z-10 pt-6 pb-2 text-white"
+          className="relative z-10 pt-16 pb-2 text-white"
         >
           <div className="text-center">
             <h1 className="text-3xl font-bold mb-2">マイページ</h1>

@@ -123,7 +123,7 @@ export default function HomePage() {
           <div className="absolute bottom-10 right-10 w-40 h-40 bg-blue-400 rounded-full opacity-20 blur-xl animate-pulse" />
         </div>
         
-        <div className="relative z-10 px-4 pt-6 pb-20">
+        <div className="relative z-10 px-4 pt-16 pb-20">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
