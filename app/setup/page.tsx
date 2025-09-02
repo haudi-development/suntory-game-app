@@ -460,6 +460,46 @@ export default function SetupPage() {
                 setResults([])
                 const logs: string[] = []
                 try {
+                  logs.push('🔄 テストユーザーをAuth.usersに作成中...')
+                  const response = await fetch('/api/create-auth-test-users', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                  })
+                  const result = await response.json()
+                  if (result.success) {
+                    logs.push('✅ テストユーザー作成完了')
+                    logs.push(`成功: ${result.summary.success}件`)
+                    logs.push(`失敗: ${result.summary.failed}件`)
+                    logs.push('━━━━━━━━━━━━━━━━━━━━━━━━━━━━')
+                    result.results.forEach((r: any) => {
+                      if (r.success) {
+                        logs.push(`✅ ${r.email}`)
+                      } else {
+                        logs.push(`❌ ${r.email}: ${r.error}`)
+                      }
+                    })
+                  } else {
+                    logs.push(`❌ エラー: ${result.details}`)
+                  }
+                } catch (error) {
+                  logs.push(`❌ エラー: ${error instanceof Error ? error.message : 'Unknown error'}`)
+                } finally {
+                  setResults(logs)
+                  setLoading(false)
+                }
+              }}
+              disabled={loading}
+              className="px-6 py-3 bg-pink-600 text-white rounded-lg hover:bg-pink-700 disabled:opacity-50"
+            >
+              {loading ? '作成中...' : 'テストユーザーをAuthに作成'}
+            </button>
+            
+            <button
+              onClick={async () => {
+                setLoading(true)
+                setResults([])
+                const logs: string[] = []
+                try {
                   logs.push('🔄 チェックアウト修正SQLを生成中...')
                   const response = await fetch('/api/fix-checkout', {
                     method: 'POST',
