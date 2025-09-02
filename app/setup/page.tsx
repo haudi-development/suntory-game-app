@@ -453,6 +453,41 @@ export default function SetupPage() {
             >
               {loading ? '生成中...' : 'ランキング表示修正SQL生成'}
             </button>
+            
+            <button
+              onClick={async () => {
+                setLoading(true)
+                setResults([])
+                const logs: string[] = []
+                try {
+                  logs.push('🔄 チェックアウト修正SQLを生成中...')
+                  const response = await fetch('/api/fix-checkout', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                  })
+                  const result = await response.json()
+                  if (result.sql) {
+                    logs.push('📋 以下のSQLをSupabaseダッシュボードで実行してください:')
+                    logs.push('━━━━━━━━━━━━━━━━━━━━━━━━━━━━')
+                    result.steps.forEach((step: string) => logs.push(step))
+                    logs.push('━━━━━━━━━━━━━━━━━━━━━━━━━━━━')
+                    logs.push('SQL:')
+                    logs.push('```sql')
+                    result.sql.split('\n').forEach((line: string) => logs.push(line))
+                    logs.push('```')
+                  }
+                } catch (error) {
+                  logs.push(`❌ エラー: ${error instanceof Error ? error.message : 'Unknown error'}`)
+                } finally {
+                  setResults(logs)
+                  setLoading(false)
+                }
+              }}
+              disabled={loading}
+              className="px-6 py-3 bg-teal-600 text-white rounded-lg hover:bg-teal-700 disabled:opacity-50"
+            >
+              {loading ? '生成中...' : 'チェックアウト修正SQL生成'}
+            </button>
           </div>
         </div>
 
