@@ -391,6 +391,38 @@ export default function SetupPage() {
       <div className="max-w-2xl mx-auto">
         <h1 className="text-3xl font-bold mb-6">データベースセットアップ</h1>
         
+        <div className="bg-red-100 border-2 border-red-500 rounded-lg p-6 mb-6">
+          <h2 className="text-2xl font-bold text-red-600 mb-4">⚡ 緊急：明日の提案用</h2>
+          <button
+            onClick={async () => {
+              setLoading(true)
+              setResults([])
+              const logs: string[] = []
+              try {
+                const response = await fetch('/api/quick-dummy-data', { method: 'POST' })
+                const result = await response.json()
+                logs.push('📋 以下のSQLをSupabaseで今すぐ実行してください！')
+                logs.push('━━━━━━━━━━━━━━━━━━━━━━━━━━━━')
+                result.steps.forEach((step: string) => logs.push(step))
+                logs.push('━━━━━━━━━━━━━━━━━━━━━━━━━━━━')
+                logs.push('SQL:')
+                logs.push('```sql')
+                result.sql.split('\n').forEach((line: string) => logs.push(line))
+                logs.push('```')
+              } catch (error) {
+                logs.push(`❌ エラー: ${error instanceof Error ? error.message : 'Unknown error'}`)
+              } finally {
+                setResults(logs)
+                setLoading(false)
+              }
+            }}
+            disabled={loading}
+            className="w-full px-8 py-6 bg-red-600 text-white text-xl font-bold rounded-lg hover:bg-red-700 disabled:opacity-50"
+          >
+            {loading ? '生成中...' : '🚀 今すぐランキングにダミーデータを表示（提案デモ用）'}
+          </button>
+        </div>
+
         <div className="bg-white rounded-lg shadow p-6 mb-6">
           <h2 className="text-xl font-semibold mb-4">セットアップツール</h2>
           <p className="text-gray-600 mb-4">
