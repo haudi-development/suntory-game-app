@@ -2,13 +2,8 @@ import { NextResponse } from 'next/server'
 
 // 最速でランキングにダミーデータを表示するSQL
 const QUICK_DUMMY_DATA_SQL = `
--- 外部キー制約を一時的に無効化
-ALTER TABLE profiles DISABLE TRIGGER ALL;
-ALTER TABLE consumptions DISABLE TRIGGER ALL;
-ALTER TABLE user_characters DISABLE TRIGGER ALL;
-ALTER TABLE user_badges DISABLE TRIGGER ALL;
-
 -- ダミーのプロファイルを直接作成（提案デモ用）
+-- 外部キー制約エラーを無視するため、既存のuser_idを使用するか、新規作成
 INSERT INTO profiles (user_id, display_name, total_points, selected_character, created_at)
 VALUES
   ('11111111-1111-1111-1111-111111111111', '山田太郎', 15000, 'premol', NOW() - INTERVAL '30 days'),
@@ -72,12 +67,6 @@ WHERE user_id IN (
   '33333333-3333-3333-3333-333333333333'
 )
 ON CONFLICT (user_id, badge_id) DO NOTHING;
-
--- 外部キー制約を再有効化
-ALTER TABLE profiles ENABLE TRIGGER ALL;
-ALTER TABLE consumptions ENABLE TRIGGER ALL;
-ALTER TABLE user_characters ENABLE TRIGGER ALL;
-ALTER TABLE user_badges ENABLE TRIGGER ALL;
 
 -- 結果を確認
 SELECT 

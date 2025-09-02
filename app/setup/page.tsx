@@ -399,7 +399,7 @@ export default function SetupPage() {
               setResults([])
               const logs: string[] = []
               try {
-                const response = await fetch('/api/quick-dummy-data', { method: 'POST' })
+                const response = await fetch('/api/simple-dummy-data', { method: 'POST' })
                 const result = await response.json()
                 logs.push('📋 以下のSQLをSupabaseで今すぐ実行してください！')
                 logs.push('━━━━━━━━━━━━━━━━━━━━━━━━━━━━')
