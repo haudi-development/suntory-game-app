@@ -4,7 +4,7 @@ import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 import { CHARACTERS } from '@/lib/characters'
-import { LogOut, Award, Calendar, Check, Sparkles, X, MapPin, Clock, Camera } from 'lucide-react'
+import { LogOut, Award, Calendar, Check, Sparkles, X, MapPin, Clock, Camera, Lock } from 'lucide-react'
 import Link from 'next/link'
 import toast, { Toaster } from 'react-hot-toast'
 import { motion, AnimatePresence } from 'framer-motion'
@@ -210,7 +210,8 @@ export default function ProfilePage() {
             {CHARACTERS.map((character, index) => {
               const userData = userCharacters.find(
                 c => c.character_type === character.id
-              ) || { level: 1, exp: 0 }
+              )
+              const isUnlocked = !!userData
               const isSelected = profile?.selected_character === character.id
               
               return (
@@ -219,16 +220,18 @@ export default function ProfilePage() {
                   initial={{ opacity: 0, scale: 0.8 }}
                   animate={{ opacity: 1, scale: 1 }}
                   transition={{ delay: index * 0.05 }}
-                  whileHover={{ scale: 1.05 }}
-                  whileTap={{ scale: 0.95 }}
-                  className={`relative text-center cursor-pointer transition-all duration-300 rounded-2xl ${
-                    isSelected 
-                      ? 'ring-2 ring-offset-2 ring-blue-500 bg-gradient-to-br from-blue-50 to-purple-50 p-3 shadow-lg' 
-                      : 'p-3 hover:bg-gray-50 bg-white border border-gray-200'
+                  whileHover={isUnlocked ? { scale: 1.05 } : {}}
+                  whileTap={isUnlocked ? { scale: 0.95 } : {}}
+                  className={`relative text-center transition-all duration-300 rounded-2xl ${
+                    !isUnlocked 
+                      ? 'p-3 bg-gray-100 border-2 border-dashed border-gray-300 opacity-60 cursor-not-allowed' 
+                      : isSelected 
+                        ? 'ring-2 ring-offset-2 ring-blue-500 bg-gradient-to-br from-blue-50 to-purple-50 p-3 shadow-lg cursor-pointer' 
+                        : 'p-3 hover:bg-gray-50 bg-white border border-gray-200 cursor-pointer'
                   }`}
-                  onClick={() => handleCharacterSelect(character.id)}
+                  onClick={() => isUnlocked && handleCharacterSelect(character.id)}
                 >
-                  {isSelected && (
+                  {isSelected && isUnlocked && (
                     <motion.div 
                       initial={{ scale: 0 }}
                       animate={{ scale: 1 }}
@@ -237,28 +240,45 @@ export default function ProfilePage() {
                       <Check size={14} />
                     </motion.div>
                   )}
+
+                  {!isUnlocked && (
+                    <div className="absolute -top-2 -right-2 bg-gray-500 text-white rounded-full p-1 z-10">
+                      <Lock size={14} />
+                    </div>
+                  )}
                   
                   <div className="w-full aspect-square flex items-center justify-center mb-2">
                     <div className={`w-16 h-16 rounded-full flex items-center justify-center ${
-                      isSelected 
-                        ? 'bg-gradient-to-br from-blue-200 to-purple-200' 
-                        : 'bg-gradient-to-br from-gray-100 to-gray-200'
+                      !isUnlocked
+                        ? 'bg-gray-200'
+                        : isSelected 
+                          ? 'bg-gradient-to-br from-blue-200 to-purple-200' 
+                          : 'bg-gradient-to-br from-gray-100 to-gray-200'
                     }`}>
-                      <span className="text-3xl">{characterEmojis[character.id] || '🎮'}</span>
+                      <span className={`text-3xl ${!isUnlocked ? 'grayscale' : ''}`}>
+                        {characterEmojis[character.id] || '🎮'}
+                      </span>
                     </div>
                   </div>
                   
-                  <p className="text-xs font-bold truncate">{character.name}</p>
-                  <p className="text-xs text-gray-500">Lv.{userData.level}</p>
-                  
-                  <div className="mt-1">
-                    <div className="h-1 bg-gray-200 rounded-full overflow-hidden">
-                      <div 
-                        className="h-full bg-gradient-to-r from-blue-400 to-purple-500"
-                        style={{ width: `${Math.min(100, userData.exp)}%` }}
-                      />
-                    </div>
-                  </div>
+                  <p className={`text-xs font-bold truncate ${!isUnlocked ? 'text-gray-400' : ''}`}>
+                    {character.name}
+                  </p>
+                  {isUnlocked ? (
+                    <>
+                      <p className="text-xs text-gray-500">Lv.{userData.level}</p>
+                      <div className="mt-1">
+                        <div className="h-1 bg-gray-200 rounded-full overflow-hidden">
+                          <div 
+                            className="h-full bg-gradient-to-r from-blue-400 to-purple-500"
+                            style={{ width: `${Math.min(100, userData.exp)}%` }}
+                          />
+                        </div>
+                      </div>
+                    </>
+                  ) : (
+                    <p className="text-xs text-gray-400">未解禁</p>
+                  )}
                 </motion.div>
               )
             })}
@@ -385,7 +405,7 @@ export default function ProfilePage() {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4 overflow-y-auto"
+            className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center px-4 py-20 overflow-y-auto"
             onClick={() => setSelectedActivity(null)}
           >
             <motion.div
@@ -393,7 +413,7 @@ export default function ProfilePage() {
               animate={{ scale: 1, y: 0 }}
               exit={{ scale: 0.9, y: 20 }}
               onClick={(e) => e.stopPropagation()}
-              className="bg-white rounded-3xl max-w-md w-full my-8 max-h-[85vh] overflow-y-auto"
+              className="bg-white rounded-3xl max-w-md w-full mb-20 max-h-[calc(100vh-10rem)] overflow-y-auto"
             >
               {/* モーダルヘッダー */}
               <div className="sticky top-0 bg-gradient-to-r from-blue-500 to-purple-600 p-4 rounded-t-3xl">
