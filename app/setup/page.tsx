@@ -196,11 +196,45 @@ export default function SetupPage() {
         logs.push('━━━━━━━━━━━━━━━━━━━━━━━━━━━━')
         result.steps.forEach((step: string) => logs.push(step))
         logs.push('━━━━━━━━━━━━━━━━━━━━━━━━━━━━')
-        logs.push('SQL:')
-        logs.push(result.sql)
+        logs.push('')
+        // SQLを改行ごとに分割して表示
+        const sqlLines = result.sql.split('\n')
+        sqlLines.forEach((line: string) => logs.push(line))
       }
     } catch (error) {
       console.error('Fix policies error:', error)
+      logs.push(`❌ エラー: ${error instanceof Error ? error.message : 'Unknown error'}`)
+    } finally {
+      setResults(logs)
+      setLoading(false)
+    }
+  }
+
+  const createTables = async () => {
+    setLoading(true)
+    setResults([])
+    const logs: string[] = []
+
+    try {
+      const response = await fetch('/api/create-tables', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+      })
+      
+      const result = await response.json()
+      
+      if (result.sql) {
+        logs.push('📋 以下のSQLをSupabaseダッシュボードで実行してください:')
+        logs.push('━━━━━━━━━━━━━━━━━━━━━━━━━━━━')
+        result.steps.forEach((step: string) => logs.push(step))
+        logs.push('━━━━━━━━━━━━━━━━━━━━━━━━━━━━')
+        logs.push('SQL:')
+        // SQLを改行ごとに分割して表示
+        const sqlLines = result.sql.split('\n')
+        sqlLines.forEach((line: string) => logs.push(line))
+      }
+    } catch (error) {
+      console.error('Create tables error:', error)
       logs.push(`❌ エラー: ${error instanceof Error ? error.message : 'Unknown error'}`)
     } finally {
       setResults(logs)
@@ -242,6 +276,14 @@ export default function SetupPage() {
               className="px-6 py-3 bg-red-600 text-white rounded-lg hover:bg-red-700 disabled:opacity-50"
             >
               {loading ? '生成中...' : 'RLSポリシー修正SQL生成'}
+            </button>
+            
+            <button
+              onClick={createTables}
+              disabled={loading}
+              className="px-6 py-3 bg-green-600 text-white rounded-lg hover:bg-green-700 disabled:opacity-50"
+            >
+              {loading ? '生成中...' : 'テーブル作成SQL生成'}
             </button>
           </div>
         </div>
