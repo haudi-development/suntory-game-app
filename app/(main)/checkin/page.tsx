@@ -58,7 +58,31 @@ export default function CheckInPage() {
 
       if (error) throw error
       
-      const venueList = data || []
+      let venueList = data || []
+      
+      // データがない場合は初期データをセットアップ
+      if (venueList.length === 0) {
+        console.log('店舗データが見つからないため、セットアップを実行します...')
+        const setupResponse = await fetch('/api/setup-venues', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+        })
+        
+        if (setupResponse.ok) {
+          const setupResult = await setupResponse.json()
+          console.log('セットアップ完了:', setupResult)
+          
+          // 再度取得
+          const { data: newData } = await supabase
+            .from('venues')
+            .select('*')
+            .eq('is_restaurant', true)
+            .order('name')
+          
+          venueList = newData || []
+        }
+      }
+      
       setVenues(venueList)
       
       // デモ用：ランダムに距離を設定
