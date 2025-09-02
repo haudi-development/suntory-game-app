@@ -38,6 +38,14 @@ export default function LeaderboardPage() {
     try {
       setLoading(true)
       
+      // デバッグ: profilesテーブルのデータを確認
+      const { data: allProfiles, error: profileError } = await supabase
+        .from('profiles')
+        .select('*')
+      
+      console.log('All profiles:', allProfiles)
+      console.log('Profile error:', profileError)
+      
       let query = supabase
         .from('profiles')
         .select('*')
@@ -133,11 +141,16 @@ export default function LeaderboardPage() {
         
       } else {
         // 総合ランキング
-        const { data } = await query
+        const { data, error } = await query
           .order('total_points', { ascending: false })
           .limit(50)
 
-        setRankings(data || [])
+        console.log('Ranking data:', data)
+        console.log('Ranking error:', error)
+        
+        // total_pointsが0より大きいユーザーのみ表示
+        const validRankings = data?.filter(profile => profile.total_points > 0) || []
+        setRankings(validRankings)
         
         // 自分の順位を探す
         const myIndex = data?.findIndex(u => u.user_id === currentUser?.id)
