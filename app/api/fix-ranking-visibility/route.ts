@@ -2,41 +2,47 @@ import { NextResponse } from 'next/server'
 
 // ランキング表示用のRLSポリシーを修正
 const FIX_RANKING_SQL = `
--- profilesテーブルのRLSポリシーを修正
--- 既存のポリシーを削除
-DROP POLICY IF EXISTS "Users can view their own profile" ON profiles;
-DROP POLICY IF EXISTS "Users can update their own profile" ON profiles;
-DROP POLICY IF EXISTS "Users can insert their own profile" ON profiles;
+-- 一旦すべてのポリシーを削除してから再作成
+DO $$ 
+BEGIN
+  -- profilesテーブルのポリシーを削除
+  DROP POLICY IF EXISTS "Users can view their own profile" ON profiles;
+  DROP POLICY IF EXISTS "Users can update their own profile" ON profiles;
+  DROP POLICY IF EXISTS "Users can insert their own profile" ON profiles;
+  DROP POLICY IF EXISTS "Anyone can view profiles for ranking" ON profiles;
+  
+  -- consumptionsテーブルのポリシーを削除
+  DROP POLICY IF EXISTS "Users can view their own consumptions" ON consumptions;
+  DROP POLICY IF EXISTS "Users can insert their own consumptions" ON consumptions;
+  DROP POLICY IF EXISTS "Anyone can view consumptions for ranking" ON consumptions;
+EXCEPTION
+  WHEN OTHERS THEN
+    NULL; -- エラーを無視
+END $$;
 
--- 新しいポリシーを作成
--- 全員が全プロフィールを閲覧可能（ランキング表示のため）
-CREATE POLICY "Anyone can view profiles for ranking" ON profiles
+-- profilesテーブルの新しいポリシー
+CREATE POLICY "public_read_profiles" ON profiles
   FOR SELECT USING (true);
 
--- ユーザーは自分のプロフィールのみ更新可能
-CREATE POLICY "Users can update their own profile" ON profiles
+CREATE POLICY "own_update_profiles" ON profiles
   FOR UPDATE USING (auth.uid() = user_id);
 
--- ユーザーは自分のプロフィールのみ作成可能
-CREATE POLICY "Users can insert their own profile" ON profiles
+CREATE POLICY "own_insert_profiles" ON profiles
   FOR INSERT WITH CHECK (auth.uid() = user_id);
 
--- consumptionsテーブルも同様に修正（ランキング集計のため）
-DROP POLICY IF EXISTS "Users can view their own consumptions" ON consumptions;
-
--- ランキング集計のため全員が閲覧可能
-CREATE POLICY "Anyone can view consumptions for ranking" ON consumptions
+-- consumptionsテーブルの新しいポリシー  
+CREATE POLICY "public_read_consumptions" ON consumptions
   FOR SELECT USING (true);
 
--- ユーザーは自分の記録のみ挿入可能
-CREATE POLICY "Users can insert their own consumptions" ON consumptions
+CREATE POLICY "own_insert_consumptions" ON consumptions
   FOR INSERT WITH CHECK (auth.uid() = user_id);
 
 -- 確認クエリ
 SELECT 
   'RLSポリシー修正完了' as status,
   (SELECT COUNT(*) FROM profiles) as total_profiles,
-  (SELECT COUNT(*) FROM profiles WHERE total_points > 0) as profiles_with_points;
+  (SELECT COUNT(*) FROM profiles WHERE total_points > 0) as profiles_with_points,
+  (SELECT COUNT(*) FROM consumptions) as total_consumptions;
 `;
 
 export async function POST() {
@@ -53,9 +59,9 @@ export async function POST() {
         '4. ランキングページを再読み込み'
       ],
       notes: [
-        'profilesテーブルを全員が閲覧可能に変更',
-        'consumptionsテーブルも全員が閲覧可能に変更',
-        'ランキング機能が正常に動作するようになります'
+        '既存のポリシーをすべて削除',
+        'シンプルな名前で新規作成',
+        'エラーが出ても続行するように設定'
       ]
     })
   } catch (error) {
