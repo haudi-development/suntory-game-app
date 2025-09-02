@@ -182,9 +182,9 @@ export default function HomePage() {
               className="relative"
             >
               <div className="w-20 h-20 bg-gradient-to-br from-blue-100 to-purple-100 rounded-full flex items-center justify-center shadow-lg">
-                <span className="text-4xl">
+                <div style={{ fontSize: '2.5rem', lineHeight: '1', fontFamily: 'Apple Color Emoji, Segoe UI Emoji, system-ui, -apple-system, sans-serif' }}>
                   {(() => {
-                    const char = profile?.selected_character || 'premol' // デフォルトをpremolに設定
+                    const char = profile?.selected_character || 'premol'
                     switch(char) {
                       case 'premol': return '🍺'
                       case 'kakuhai': return '🥃'
@@ -192,10 +192,10 @@ export default function HomePage() {
                       case 'lemon': return '🍋'
                       case 'allfree': return '🍻'
                       case 'tennensui': return '💧'
-                      default: return '🍺' // デフォルト絵文字
+                      default: return '🍺'
                     }
                   })()}
-                </span>
+                </div>
               </div>
               <div className="absolute -bottom-1 left-1/2 -translate-x-1/2 bg-gradient-to-r from-blue-500 to-purple-500 text-white px-2 py-0.5 rounded-full shadow-sm">
                 <span className="text-xs font-semibold">

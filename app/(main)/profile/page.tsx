@@ -36,6 +36,7 @@ export default function ProfilePage() {
   const [profile, setProfile] = useState<any>(null)
   const [userCharacters, setUserCharacters] = useState<any[]>([])
   const [userBadges, setUserBadges] = useState<string[]>([])
+  const [recentActivity, setRecentActivity] = useState<any[]>([])
   const [loading, setLoading] = useState(true)
   const router = useRouter()
   const supabase = createClient()
@@ -55,15 +56,22 @@ export default function ProfilePage() {
 
       setUser(user)
 
-      const [profileData, charactersData, badgesData] = await Promise.all([
+      const [profileData, charactersData, badgesData, activityData] = await Promise.all([
         supabase.from('profiles').select('*').eq('user_id', user.id).single(),
         supabase.from('user_characters').select('*').eq('user_id', user.id),
         supabase.from('user_badges').select('badge_id').eq('user_id', user.id),
+        supabase
+          .from('consumptions')
+          .select('*, venues(name)')
+          .eq('user_id', user.id)
+          .order('created_at', { ascending: false })
+          .limit(5)
       ])
 
       setProfile(profileData.data)
       setUserCharacters(charactersData.data || [])
       setUserBadges((badgesData.data || []).map(b => b.badge_id))
+      setRecentActivity(activityData.data || [])
     } catch (error) {
       console.error('Error fetching user data:', error)
     } finally {
@@ -109,7 +117,7 @@ export default function ProfilePage() {
       <Toaster position="top-center" />
       
       {/* ヘッダー */}
-      <div className="relative overflow-hidden bg-gradient-to-br from-blue-400 to-purple-600">
+      <div className="relative overflow-hidden bg-gradient-to-br from-blue-400 to-purple-600 pb-12">
         <div className="absolute inset-0">
           <div className="absolute top-10 left-10 w-32 h-32 bg-yellow-400 rounded-full opacity-20 blur-xl animate-pulse" />
           <div className="absolute bottom-10 right-10 w-40 h-40 bg-pink-400 rounded-full opacity-20 blur-xl animate-pulse" />
@@ -118,11 +126,11 @@ export default function ProfilePage() {
         <motion.div
           initial={{ opacity: 0, y: -20 }}
           animate={{ opacity: 1, y: 0 }}
-          className="relative z-10 p-6 text-white"
+          className="relative z-10 pt-6 pb-2 text-white"
         >
           <div className="text-center">
             <h1 className="text-3xl font-bold mb-2">マイページ</h1>
-            <p className="text-white/80">あなたの飲活記録</p>
+            <p className="text-white/80 text-sm">あなたの飲活記録</p>
           </div>
         </motion.div>
       </div>
@@ -300,17 +308,61 @@ export default function ProfilePage() {
           </h2>
           
           <div className="space-y-3">
-            <div className="flex items-center gap-3 p-3 bg-gray-50 rounded-xl">
-              <div className="text-2xl">🍺</div>
-              <div className="flex-1">
-                <p className="text-sm font-medium">プレミアムモルツを記録</p>
-                <p className="text-xs text-gray-500">銀座プレモルテラス</p>
+            {recentActivity.length > 0 ? (
+              recentActivity.map((activity, index) => {
+                const productEmoji = {
+                  'draft_beer': '🍺',
+                  'highball': '🥃',
+                  'sour': '🍋',
+                  'wine': '🍷',
+                  'sake': '🍶',
+                  'soft_drink': '🥤',
+                  'can_beer': '🍻',
+                  'can_highball': '🥃',
+                  'bottled_water': '💧'
+                }[activity.product_type] || '🍹'
+                
+                const timeAgo = (() => {
+                  const diff = Date.now() - new Date(activity.created_at).getTime()
+                  const hours = Math.floor(diff / (1000 * 60 * 60))
+                  const days = Math.floor(hours / 24)
+                  if (days > 0) return `${days}日前`
+                  if (hours > 0) return `${hours}時間前`
+                  const minutes = Math.floor(diff / (1000 * 60))
+                  return minutes > 0 ? `${minutes}分前` : 'たった今'
+                })()
+                
+                return (
+                  <motion.div
+                    key={activity.id}
+                    initial={{ opacity: 0, x: -20 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    transition={{ delay: index * 0.1 }}
+                    className="flex items-center gap-3 p-3 bg-gray-50 rounded-xl hover:bg-gray-100 transition-colors"
+                  >
+                    <div className="text-2xl">{productEmoji}</div>
+                    <div className="flex-1">
+                      <p className="text-sm font-medium">
+                        {activity.product_name || 'ドリンク'}を記録
+                      </p>
+                      <p className="text-xs text-gray-500">
+                        {activity.venues?.name || activity.venue_name || '未設定'}
+                      </p>
+                    </div>
+                    <div className="text-right">
+                      <p className="text-sm font-bold text-green-600">+{activity.points_earned}pt</p>
+                      <p className="text-xs text-gray-500">{timeAgo}</p>
+                    </div>
+                  </motion.div>
+                )
+              })
+            ) : (
+              <div className="text-center py-8 text-gray-500">
+                <div className="text-4xl mb-2">🍺</div>
+                <p className="text-sm">まだ記録がありません</p>
+                <p className="text-xs mt-1">飲み物を記録してポイントを獲得しよう！</p>
               </div>
-              <div className="text-right">
-                <p className="text-sm font-bold text-green-600">+50pt</p>
-                <p className="text-xs text-gray-500">2時間前</p>
-              </div>
-            </div>
+            )}
           </div>
         </motion.div>
       </div>
