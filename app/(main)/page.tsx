@@ -6,8 +6,8 @@ import { useRouter } from 'next/navigation'
 import { motion, AnimatePresence } from 'framer-motion'
 import { Camera, Trophy, Gift, Sparkles, TrendingUp, Users, Target, Zap } from 'lucide-react'
 import { GamingButton } from '@/components/ui/GamingButton'
-import Image from 'next/image'
 import toast, { Toaster } from 'react-hot-toast'
+import { CharacterPlaceholder } from '@/components/CharacterPlaceholder'
 
 export default function HomePage() {
   const [user, setUser] = useState<any>(null)
@@ -92,6 +92,13 @@ export default function HomePage() {
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50">
       <Toaster position="top-center" />
       
+      {/* 固定ロゴ */}
+      <div className="fixed top-4 left-4 z-50 bg-white/90 backdrop-blur-sm rounded-full px-4 py-2 shadow-lg">
+        <div className="text-sm font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
+          KANPAI! by Suntory
+        </div>
+      </div>
+      
       {/* ヘッダー */}
       <div className="relative overflow-hidden bg-gradient-to-br from-blue-400 to-purple-600">
         <div className="absolute inset-0">
@@ -171,19 +178,19 @@ export default function HomePage() {
                 transition={{ duration: 2, repeat: Infinity }}
                 className="relative"
               >
-                <Image
-                  src={`/characters/${profile.selected_character}/level1.png`}
-                  alt="Character"
-                  width={80}
-                  height={80}
-                  className="drop-shadow-md"
-                  onError={(e) => {
-                    e.currentTarget.src = '/characters/premol/level1.png'
-                  }}
+                <CharacterPlaceholder 
+                  character={profile.selected_character}
+                  size={80}
                 />
                 <div className="absolute -bottom-1 left-1/2 -translate-x-1/2 bg-gradient-to-r from-blue-500 to-purple-500 text-white px-2 py-0.5 rounded-full shadow-sm">
                   <span className="text-xs font-semibold">
-                    {profile.selected_character}
+                    {profile.selected_character === 'premol' ? 'プレモルくん' :
+                     profile.selected_character === 'kakuhai' ? '角ハイ坊や' :
+                     profile.selected_character === 'midori' ? '翠ジン妖精' :
+                     profile.selected_character === 'lemon' ? 'レモンサワー兄弟' :
+                     profile.selected_character === 'allfree' ? 'オールフリー先生' :
+                     profile.selected_character === 'tennensui' ? '天然水スピリット' :
+                     profile.selected_character}
                   </span>
                 </div>
               </motion.div>

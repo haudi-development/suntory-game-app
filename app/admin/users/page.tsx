@@ -210,99 +210,128 @@ export default function AdminUsersPage() {
   }
 
   return (
-    <div className="p-6">
+    <div>
       <Toaster position="top-center" />
       
       {/* ページヘッダー */}
       <div className="mb-8">
-        <h1 className="text-3xl font-bold text-gray-900">ユーザー管理</h1>
-        <p className="text-gray-600 mt-2">ユーザーの一覧と編集</p>
+        <div className="flex items-center gap-3 mb-4">
+          <div className="w-10 h-10 bg-gradient-to-r from-blue-500 to-purple-600 rounded-xl flex items-center justify-center">
+            <Users className="text-white" size={24} />
+          </div>
+          <div>
+            <h1 className="text-3xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
+              ユーザー管理
+            </h1>
+            <p className="text-gray-600">KANPAI! ユーザーの一覧と編集</p>
+          </div>
+        </div>
       </div>
 
       <div>
         {/* 検索バー */}
-        <div className="bg-white rounded-lg shadow p-4 mb-6">
+        <div className="bg-white/70 backdrop-blur-sm border border-white/50 rounded-2xl p-6 mb-8 shadow-xl">
           <div className="relative">
-            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" size={20} />
+            <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400" size={20} />
             <input
               type="text"
               placeholder="ユーザー名またはIDで検索..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              className="w-full pl-10 pr-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary"
+              className="w-full pl-12 pr-4 py-3 bg-white/50 border border-gray-200/50 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500/50 transition-all duration-200 placeholder-gray-400"
             />
           </div>
         </div>
 
         {/* ユーザーテーブル */}
-        <div className="bg-white rounded-lg shadow overflow-hidden">
+        <div className="bg-white/70 backdrop-blur-sm border border-white/50 rounded-2xl shadow-xl overflow-hidden">
           <table className="min-w-full">
-            <thead className="bg-gray-50">
+            <thead className="bg-gradient-to-r from-gray-50/80 to-blue-50/80 backdrop-blur-sm">
               <tr>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  ユーザー
+                <th className="px-6 py-4 text-left text-xs font-bold text-gray-700 uppercase tracking-wider">
+                  👤 ユーザー
                 </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  メール
+                <th className="px-6 py-4 text-left text-xs font-bold text-gray-700 uppercase tracking-wider">
+                  📧 メール
                 </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  ポイント
+                <th className="px-6 py-4 text-left text-xs font-bold text-gray-700 uppercase tracking-wider">
+                  ⭐ ポイント
                 </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  記録数
+                <th className="px-6 py-4 text-left text-xs font-bold text-gray-700 uppercase tracking-wider">
+                  📊 記録数
                 </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  キャラクター数
+                <th className="px-6 py-4 text-left text-xs font-bold text-gray-700 uppercase tracking-wider">
+                  🎮 キャラクター
                 </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  バッジ数
+                <th className="px-6 py-4 text-left text-xs font-bold text-gray-700 uppercase tracking-wider">
+                  🏆 バッジ数
                 </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  登録日
+                <th className="px-6 py-4 text-left text-xs font-bold text-gray-700 uppercase tracking-wider">
+                  📅 登録日
                 </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  操作
+                <th className="px-6 py-4 text-left text-xs font-bold text-gray-700 uppercase tracking-wider">
+                  ⚙️ 操作
                 </th>
               </tr>
             </thead>
-            <tbody className="bg-white divide-y divide-gray-200">
+            <tbody className="bg-white/50 backdrop-blur-sm divide-y divide-gray-200/50">
               {filteredUsers.map((user) => {
                 const createdAt = new Date(user.created_at)
                 const dateStr = `${createdAt.getFullYear()}/${createdAt.getMonth() + 1}/${createdAt.getDate()}`
                 
                 return (
-                  <tr key={user.user_id}>
+                  <tr key={user.user_id} className="hover:bg-gradient-to-r hover:from-blue-50/50 hover:to-purple-50/50 transition-all duration-200">
                     <td className="px-6 py-4 whitespace-nowrap">
-                      <div>
-                        <div className="text-sm font-medium text-gray-900">
-                          {user.nickname || 'ユーザー'}
+                      <div className="flex items-center gap-3">
+                        <div className="w-10 h-10 bg-gradient-to-r from-blue-100 to-purple-100 rounded-xl flex items-center justify-center">
+                          <span className="font-bold text-blue-700">
+                            {(user.nickname || 'ユーザー').charAt(0)}
+                          </span>
                         </div>
-                        <div className="text-xs text-gray-500">
-                          {user.user_id.substring(0, 8)}...
+                        <div>
+                          <div className="text-sm font-semibold text-gray-900">
+                            {user.nickname || 'ユーザー'}
+                          </div>
+                          <div className="text-xs text-gray-500 font-mono">
+                            ID: {user.user_id.substring(0, 8)}...
+                          </div>
                         </div>
                       </div>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
-                      <div className="text-sm text-gray-900">
+                      <div className="text-sm text-gray-900 font-medium">
                         {user.email || 'N/A'}
                       </div>
                       {user.email_confirmed === false && (
-                        <span className="text-xs text-red-500">未確認</span>
+                        <span className="inline-flex px-2 py-1 text-xs bg-red-100 text-red-600 rounded-full">
+                          未確認
+                        </span>
                       )}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
-                      <span className="font-bold text-primary">{user.total_points || 0} pt</span>
+                      <div className="flex items-center gap-2">
+                        <span className="font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent text-lg">
+                          {(user.total_points || 0).toLocaleString()}
+                        </span>
+                        <span className="text-sm text-gray-500">pt</span>
+                      </div>
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                      {user.consumptions?.[0]?.count || 0}
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      <span className="inline-flex px-3 py-1 bg-green-100 text-green-700 text-sm font-medium rounded-full">
+                        {user.consumptions?.[0]?.count || 0}
+                      </span>
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                      {user.user_characters?.length || 0}
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      <span className="inline-flex px-3 py-1 bg-purple-100 text-purple-700 text-sm font-medium rounded-full">
+                        {user.user_characters?.length || 0}
+                      </span>
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                      {user.user_badges?.length || 0}
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      <span className="inline-flex px-3 py-1 bg-yellow-100 text-yellow-700 text-sm font-medium rounded-full">
+                        {user.user_badges?.length || 0}
+                      </span>
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600 font-medium">
                       {dateStr}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
@@ -312,18 +341,20 @@ export default function AdminUsersPage() {
                             setSelectedUser(user)
                             setShowEditModal(true)
                           }}
-                          className="text-blue-600 hover:text-blue-900"
+                          className="p-2 text-blue-600 hover:text-blue-800 hover:bg-blue-100 rounded-lg transition-all duration-200"
+                          title="編集"
                         >
-                          <Edit size={18} />
+                          <Edit size={16} />
                         </button>
                         <button
                           onClick={() => {
                             setSelectedUser(user)
                             setShowBadgeModal(true)
                           }}
-                          className="text-yellow-600 hover:text-yellow-900"
+                          className="p-2 text-yellow-600 hover:text-yellow-800 hover:bg-yellow-100 rounded-lg transition-all duration-200"
+                          title="バッジ付与"
                         >
-                          <Award size={18} />
+                          <Award size={16} />
                         </button>
                         <UserQuickActions
                           userId={user.user_id}
@@ -332,9 +363,10 @@ export default function AdminUsersPage() {
                         />
                         <button
                           onClick={() => deleteUser(user.user_id)}
-                          className="text-red-600 hover:text-red-900"
+                          className="p-2 text-red-600 hover:text-red-800 hover:bg-red-100 rounded-lg transition-all duration-200"
+                          title="削除"
                         >
-                          <Trash2 size={18} />
+                          <Trash2 size={16} />
                         </button>
                       </div>
                     </td>

@@ -22,13 +22,22 @@ export default function AdminSettingsPage() {
   }
 
   return (
-    <div className="p-6">
+    <div>
       <Toaster position="top-center" />
       
       {/* ページヘッダー */}
       <div className="mb-8">
-        <h1 className="text-3xl font-bold text-gray-900">システム設定</h1>
-        <p className="text-gray-600 mt-2">アプリケーションの設定と管理</p>
+        <div className="flex items-center gap-3 mb-4">
+          <div className="w-10 h-10 bg-gradient-to-r from-slate-500 to-slate-600 rounded-xl flex items-center justify-center">
+            <Settings className="text-white" size={24} />
+          </div>
+          <div>
+            <h1 className="text-3xl font-bold bg-gradient-to-r from-slate-600 to-slate-700 bg-clip-text text-transparent">
+              システム設定
+            </h1>
+            <p className="text-gray-600">KANPAI! アプリケーションの設定と管理</p>
+          </div>
+        </div>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">

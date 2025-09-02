@@ -88,13 +88,22 @@ export default function AdminRankingsPage() {
   }
 
   return (
-    <div className="p-6">
+    <div>
       <Toaster position="top-center" />
       
       {/* ページヘッダー */}
       <div className="mb-8">
-        <h1 className="text-3xl font-bold text-gray-900">ランキング管理</h1>
-        <p className="text-gray-600 mt-2">ユーザーランキングの表示と管理</p>
+        <div className="flex items-center gap-3 mb-4">
+          <div className="w-10 h-10 bg-gradient-to-r from-yellow-500 to-orange-600 rounded-xl flex items-center justify-center">
+            <Trophy className="text-white" size={24} />
+          </div>
+          <div>
+            <h1 className="text-3xl font-bold bg-gradient-to-r from-yellow-600 to-orange-600 bg-clip-text text-transparent">
+              ランキング管理
+            </h1>
+            <p className="text-gray-600">KANPAI! ユーザーランキングの表示と管理</p>
+          </div>
+        </div>
       </div>
 
       {/* 期間選択タブ */}

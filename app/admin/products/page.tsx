@@ -378,18 +378,25 @@ CREATE INDEX idx_suntory_products_active ON suntory_products(is_active);`)
   }
 
   return (
-    <div className="p-6">
+    <div>
       <Toaster position="top-center" />
       
       {/* ページヘッダー */}
       <div className="mb-8 flex items-center justify-between">
-        <div>
-          <h1 className="text-3xl font-bold text-gray-900">製品管理</h1>
-          <p className="text-gray-600 mt-2">サントリー製品の管理</p>
+        <div className="flex items-center gap-3">
+          <div className="w-10 h-10 bg-gradient-to-r from-purple-500 to-pink-600 rounded-xl flex items-center justify-center">
+            <Package className="text-white" size={24} />
+          </div>
+          <div>
+            <h1 className="text-3xl font-bold bg-gradient-to-r from-purple-600 to-pink-600 bg-clip-text text-transparent">
+              製品管理
+            </h1>
+            <p className="text-gray-600">KANPAI! サントリー製品の管理</p>
+          </div>
         </div>
         <button
           onClick={() => setShowAddModal(true)}
-          className="bg-primary text-white px-4 py-2 rounded-lg hover:bg-primary-dark flex items-center gap-2"
+          className="bg-gradient-to-r from-purple-500 to-purple-600 text-white px-6 py-3 rounded-xl hover:from-purple-600 hover:to-purple-700 flex items-center gap-2 shadow-lg shadow-purple-500/25 hover:shadow-purple-500/40 transition-all duration-200"
         >
           <Plus size={20} />
           製品を追加
@@ -398,17 +405,17 @@ CREATE INDEX idx_suntory_products_active ON suntory_products(is_active);`)
 
       <div>
         {/* フィルター */}
-        <div className="bg-white rounded-lg shadow p-4 mb-6">
-          <div className="flex flex-col sm:flex-row gap-4">
+        <div className="bg-white/70 backdrop-blur-sm border border-white/50 rounded-2xl p-6 mb-8 shadow-xl">
+          <div className="flex flex-col sm:flex-row gap-6">
             <div className="flex-1">
               <div className="relative">
-                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" size={20} />
+                <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400" size={20} />
                 <input
                   type="text"
                   placeholder="製品名または商品ラインで検索..."
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
-                  className="w-full pl-10 pr-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary"
+                  className="w-full pl-12 pr-4 py-3 bg-white/50 border border-gray-200/50 rounded-xl focus:outline-none focus:ring-2 focus:ring-purple-500/50 focus:border-purple-500/50 transition-all duration-200 placeholder-gray-400"
                 />
               </div>
             </div>
@@ -417,10 +424,10 @@ CREATE INDEX idx_suntory_products_active ON suntory_products(is_active);`)
                 <button
                   key={cat.value}
                   onClick={() => setSelectedCategory(cat.value)}
-                  className={`px-3 py-1 rounded-full text-sm transition-colors ${
+                  className={`px-4 py-2 rounded-xl text-sm font-medium transition-all duration-200 ${
                     selectedCategory === cat.value
-                      ? 'bg-primary text-white'
-                      : 'bg-gray-100 hover:bg-gray-200'
+                      ? 'bg-gradient-to-r from-purple-500 to-purple-600 text-white shadow-lg shadow-purple-500/25'
+                      : 'bg-gray-100 hover:bg-gray-200 text-gray-700 hover:scale-105'
                   }`}
                 >
                   {cat.label}
@@ -431,24 +438,41 @@ CREATE INDEX idx_suntory_products_active ON suntory_products(is_active);`)
         </div>
 
         {/* 統計 */}
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
-          <div className="bg-white rounded-lg shadow p-4">
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-6 mb-8">
+          <div className="group bg-gradient-to-br from-purple-50 to-purple-100 border border-purple-200/50 rounded-2xl p-6 hover:shadow-xl hover:scale-105 transition-all duration-300">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm text-gray-600">総製品数</p>
-                <p className="text-2xl font-bold">{products.length}</p>
+                <p className="text-sm text-purple-600 font-medium">総製品数</p>
+                <p className="text-3xl font-bold text-purple-900 mt-2">{products.length.toLocaleString()}</p>
+                <p className="text-xs text-purple-500 mt-1">全カテゴリー</p>
               </div>
-              <Package className="text-primary" size={32} />
+              <div className="w-14 h-14 bg-gradient-to-r from-purple-500 to-purple-600 rounded-2xl flex items-center justify-center shadow-lg shadow-purple-500/25">
+                <Package className="text-white" size={28} />
+              </div>
             </div>
           </div>
-          {['draft_beer', 'highball', 'sour'].map(cat => {
+          {['draft_beer', 'highball', 'sour'].map((cat, index) => {
             const count = products.filter(p => p.product_category === cat).length
             const label = categories.find(c => c.value === cat)?.label
+            const colors = [
+              { bg: 'from-amber-50 to-amber-100', border: 'amber-200/50', text: 'amber-600', icon: 'from-amber-500 to-amber-600', shadow: 'amber-500/25' },
+              { bg: 'from-blue-50 to-blue-100', border: 'blue-200/50', text: 'blue-600', icon: 'from-blue-500 to-blue-600', shadow: 'blue-500/25' },
+              { bg: 'from-green-50 to-green-100', border: 'green-200/50', text: 'green-600', icon: 'from-green-500 to-green-600', shadow: 'green-500/25' }
+            ]
+            const color = colors[index]
             return (
-              <div key={cat} className="bg-white rounded-lg shadow p-4">
-                <div>
-                  <p className="text-sm text-gray-600">{label}</p>
-                  <p className="text-2xl font-bold">{count}</p>
+              <div key={cat} className={`group bg-gradient-to-br ${color.bg} border border-${color.border} rounded-2xl p-6 hover:shadow-xl hover:scale-105 transition-all duration-300`}>
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className={`text-sm text-${color.text} font-medium`}>{label}</p>
+                    <p className={`text-3xl font-bold text-${color.text.replace('600', '900')} mt-2`}>{count.toLocaleString()}</p>
+                    <p className={`text-xs text-${color.text} mt-1`}>商品</p>
+                  </div>
+                  <div className={`w-14 h-14 bg-gradient-to-r ${color.icon} rounded-2xl flex items-center justify-center shadow-lg shadow-${color.shadow}`}>
+                    <span className="text-white text-2xl">
+                      {cat === 'draft_beer' ? '🍺' : cat === 'highball' ? '🥃' : '🍋'}
+                    </span>
+                  </div>
                 </div>
               </div>
             )

@@ -100,82 +100,123 @@ export default function AdminAnalyticsPage() {
   }
 
   return (
-    <div className="p-6">
+    <div>
       <Toaster position="top-center" />
       
       {/* ページヘッダー */}
       <div className="mb-8">
-        <h1 className="text-3xl font-bold text-gray-900">データ分析</h1>
-        <p className="text-gray-600 mt-2">詳細な統計とレポート</p>
+        <div className="flex items-center gap-3 mb-4">
+          <div className="w-10 h-10 bg-gradient-to-r from-emerald-500 to-teal-600 rounded-xl flex items-center justify-center">
+            <TrendingUp className="text-white" size={24} />
+          </div>
+          <div>
+            <h1 className="text-3xl font-bold bg-gradient-to-r from-emerald-600 to-teal-600 bg-clip-text text-transparent">
+              データ分析
+            </h1>
+            <p className="text-gray-600">KANPAI! 詳細な統計とレポート</p>
+          </div>
+        </div>
       </div>
 
       {/* サマリーカード */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
-        <div className="bg-white rounded-lg shadow p-4">
+      <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+        <div className="group bg-gradient-to-br from-emerald-50 to-emerald-100 border border-emerald-200/50 rounded-2xl p-6 hover:shadow-xl hover:scale-105 transition-all duration-300">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-sm text-gray-600">今週の記録数</p>
-              <p className="text-2xl font-bold">{analytics.dailyStats.length}</p>
+              <p className="text-sm text-emerald-600 font-medium">今週の記録数</p>
+              <p className="text-3xl font-bold text-emerald-900 mt-2">{analytics.dailyStats.length.toLocaleString()}</p>
+              <p className="text-xs text-emerald-500 mt-1">アクティビティ</p>
             </div>
-            <Activity className="text-green-500" size={32} />
+            <div className="w-14 h-14 bg-gradient-to-r from-emerald-500 to-emerald-600 rounded-2xl flex items-center justify-center shadow-lg shadow-emerald-500/25">
+              <Activity className="text-white" size={28} />
+            </div>
           </div>
         </div>
-        <div className="bg-white rounded-lg shadow p-4">
+        <div className="group bg-gradient-to-br from-blue-50 to-blue-100 border border-blue-200/50 rounded-2xl p-6 hover:shadow-xl hover:scale-105 transition-all duration-300">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-sm text-gray-600">総ユーザー数</p>
-              <p className="text-2xl font-bold">{analytics.userGrowth.length}</p>
+              <p className="text-sm text-blue-600 font-medium">総ユーザー数</p>
+              <p className="text-3xl font-bold text-blue-900 mt-2">{analytics.userGrowth.length.toLocaleString()}</p>
+              <p className="text-xs text-blue-500 mt-1">登録済み</p>
             </div>
-            <Users className="text-blue-500" size={32} />
+            <div className="w-14 h-14 bg-gradient-to-r from-blue-500 to-blue-600 rounded-2xl flex items-center justify-center shadow-lg shadow-blue-500/25">
+              <Users className="text-white" size={28} />
+            </div>
           </div>
         </div>
-        <div className="bg-white rounded-lg shadow p-4">
+        <div className="group bg-gradient-to-br from-purple-50 to-purple-100 border border-purple-200/50 rounded-2xl p-6 hover:shadow-xl hover:scale-105 transition-all duration-300">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-sm text-gray-600">人気商品数</p>
-              <p className="text-2xl font-bold">{productRanking.length}</p>
+              <p className="text-sm text-purple-600 font-medium">人気商品数</p>
+              <p className="text-3xl font-bold text-purple-900 mt-2">{productRanking.length.toLocaleString()}</p>
+              <p className="text-xs text-purple-500 mt-1">トップ商品</p>
             </div>
-            <Package className="text-purple-500" size={32} />
+            <div className="w-14 h-14 bg-gradient-to-r from-purple-500 to-purple-600 rounded-2xl flex items-center justify-center shadow-lg shadow-purple-500/25">
+              <Package className="text-white" size={28} />
+            </div>
           </div>
         </div>
-        <div className="bg-white rounded-lg shadow p-4">
+        <div className="group bg-gradient-to-br from-orange-50 to-orange-100 border border-orange-200/50 rounded-2xl p-6 hover:shadow-xl hover:scale-105 transition-all duration-300">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-sm text-gray-600">平均記録/日</p>
-              <p className="text-2xl font-bold">
-                {Math.round(analytics.dailyStats.length / 7)}
+              <p className="text-sm text-orange-600 font-medium">平均記録/日</p>
+              <p className="text-3xl font-bold text-orange-900 mt-2">
+                {Math.round(analytics.dailyStats.length / 7).toLocaleString()}
               </p>
+              <p className="text-xs text-orange-500 mt-1">デイリー平均</p>
             </div>
-            <Calendar className="text-orange-500" size={32} />
+            <div className="w-14 h-14 bg-gradient-to-r from-orange-500 to-orange-600 rounded-2xl flex items-center justify-center shadow-lg shadow-orange-500/25">
+              <Calendar className="text-white" size={28} />
+            </div>
           </div>
         </div>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* カテゴリー別分布 */}
-        <div className="bg-white rounded-lg shadow">
-          <div className="px-6 py-4 border-b">
-            <h2 className="text-lg font-semibold flex items-center gap-2">
-              <BarChart3 className="text-primary" size={20} />
-              カテゴリー別分布
+        <div className="bg-white/70 backdrop-blur-sm border border-white/50 rounded-2xl shadow-xl">
+          <div className="px-6 py-4 border-b border-gray-200/50">
+            <h2 className="text-lg font-bold flex items-center gap-3">
+              <div className="w-8 h-8 bg-gradient-to-r from-indigo-400 to-indigo-500 rounded-xl flex items-center justify-center">
+                <BarChart3 className="text-white" size={18} />
+              </div>
+              <span className="bg-gradient-to-r from-indigo-600 to-indigo-600 bg-clip-text text-transparent">
+                カテゴリー別分布
+              </span>
             </h2>
           </div>
           <div className="p-6">
-            <div className="space-y-3">
+            <div className="space-y-4">
               {categories.map(cat => {
                 const count = analytics.categoryBreakdown[cat.key] || 0
                 const total = Object.values(analytics.categoryBreakdown).reduce((sum: any, v: any) => sum + v, 0) as number
                 const percentage = total > 0 ? (count / total * 100).toFixed(1) : 0
                 
                 return (
-                  <div key={cat.key}>
-                    <div className="flex items-center justify-between mb-1">
-                      <span className="text-sm font-medium">{cat.label}</span>
-                      <span className="text-sm text-gray-600">{count}件 ({percentage}%)</span>
+                  <div key={cat.key} className="group">
+                    <div className="flex items-center justify-between mb-2">
+                      <div className="flex items-center gap-2">
+                        <span className="text-lg">{
+                          cat.key === 'draft_beer' ? '🍺' :
+                          cat.key === 'highball' ? '🥃' :
+                          cat.key === 'sour' ? '🍋' :
+                          cat.key === 'gin_soda' ? '🌿' :
+                          cat.key === 'non_alcohol' ? '🚫' :
+                          cat.key === 'water' ? '💧' :
+                          '🥤'
+                        }</span>
+                        <span className="font-semibold text-gray-800 group-hover:text-indigo-700 transition-colors">{cat.label}</span>
+                      </div>
+                      <div className="text-right">
+                        <span className="font-bold bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent">
+                          {count}件
+                        </span>
+                        <span className="text-xs text-gray-500 ml-1">({percentage}%)</span>
+                      </div>
                     </div>
-                    <div className="w-full bg-gray-200 rounded-full h-2">
+                    <div className="w-full bg-gray-200/50 rounded-full h-3 overflow-hidden">
                       <div
-                        className={`${cat.color} h-2 rounded-full transition-all`}
+                        className={`${cat.color} h-3 rounded-full transition-all duration-500 ease-out shadow-sm`}
                         style={{ width: `${percentage}%` }}
                       />
                     </div>

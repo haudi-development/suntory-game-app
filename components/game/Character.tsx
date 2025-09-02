@@ -2,6 +2,7 @@
 
 import { motion } from 'framer-motion'
 import { Character as CharacterType, getCharacterEvolutionStage } from '@/lib/characters'
+import { CharacterPlaceholder } from '@/components/CharacterPlaceholder'
 
 interface CharacterProps {
   character: CharacterType
@@ -31,16 +32,7 @@ export default function Character({
       whileTap={onClick ? { scale: 0.95 } : {}}
     >
       <div className={`relative ${isSelected ? 'character-glow' : ''}`}>
-        <div className="w-32 h-32 bg-gradient-to-br from-primary/20 to-primary-dark/20 rounded-full flex items-center justify-center">
-          <div className="text-6xl">
-            {character.id === 'premol' && '🍺'}
-            {character.id === 'kakuhai' && '🥃'}
-            {character.id === 'sui' && '🍸'}
-            {character.id === 'lemon' && '🍋'}
-            {character.id === 'allfree' && '🍻'}
-            {character.id === 'water' && '💧'}
-          </div>
-        </div>
+        <CharacterPlaceholder character={character.id} size={128} />
 
         {isSelected && (
           <motion.div
