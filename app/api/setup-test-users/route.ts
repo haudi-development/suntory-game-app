@@ -6,6 +6,18 @@ const CREATE_TEST_DATA_SQL = `
 -- まずprofilesテーブルにdisplay_nameカラムを追加（存在しない場合）
 ALTER TABLE profiles ADD COLUMN IF NOT EXISTS display_name TEXT;
 
+-- profilesテーブルにuser_idのUNIQUE制約を追加（存在しない場合）
+DO $$ 
+BEGIN
+  IF NOT EXISTS (
+    SELECT 1 FROM pg_constraint 
+    WHERE conname = 'profiles_user_id_key' 
+    AND conrelid = 'profiles'::regclass
+  ) THEN
+    ALTER TABLE profiles ADD CONSTRAINT profiles_user_id_key UNIQUE (user_id);
+  END IF;
+END $$;
+
 -- テストユーザーのプロファイルを作成
 WITH test_users AS (
   SELECT 
@@ -32,25 +44,29 @@ WITH test_users AS (
       ('森ひなた', 'mori@test.com', 2500, 14),
       ('池田龍', 'ikeda@test.com', 2000, 15)
   ) AS names(name, email, points, rank)
+),
+inserted_users AS (
+  INSERT INTO profiles (user_id, display_name, total_points, selected_character, created_at)
+  SELECT 
+    user_id,
+    name,
+    points,
+    CASE (rank % 6)
+      WHEN 0 THEN 'premol'
+      WHEN 1 THEN 'kakuhai'
+      WHEN 2 THEN 'sui'
+      WHEN 3 THEN 'lemon'
+      WHEN 4 THEN 'allfree'
+      ELSE 'premol'
+    END,
+    NOW() - INTERVAL '30 days' * random()
+  FROM test_users
+  ON CONFLICT (user_id) DO UPDATE SET
+    total_points = EXCLUDED.total_points,
+    display_name = EXCLUDED.display_name
+  RETURNING user_id
 )
-INSERT INTO profiles (user_id, display_name, total_points, selected_character, created_at)
-SELECT 
-  user_id,
-  name,
-  points,
-  CASE (rank % 6)
-    WHEN 0 THEN 'premol'
-    WHEN 1 THEN 'kakuhai'
-    WHEN 2 THEN 'sui'
-    WHEN 3 THEN 'lemon'
-    WHEN 4 THEN 'allfree'
-    ELSE 'premol'
-  END,
-  NOW() - INTERVAL '30 days' * random()
-FROM test_users
-ON CONFLICT (user_id) DO UPDATE SET
-  total_points = EXCLUDED.total_points,
-  display_name = EXCLUDED.display_name;
+SELECT COUNT(*) as inserted_count FROM inserted_users;
 
 -- 各テストユーザーに消費記録を作成（実際の飲んだ記録）
 WITH test_users AS (
@@ -116,10 +132,7 @@ SELECT
     ELSE 1
   END
 FROM test_users
-ON CONFLICT (user_id, character_type) DO UPDATE SET
-  level = EXCLUDED.level,
-  exp = EXCLUDED.exp,
-  evolution_stage = EXCLUDED.evolution_stage;
+ON CONFLICT (user_id, character_type) DO NOTHING;
 
 -- バッジを付与（実際の消費記録に基づいて）
 WITH user_consumption_stats AS (
