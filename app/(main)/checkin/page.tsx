@@ -193,10 +193,7 @@ export default function CheckInPage() {
       // チェックイン状態を更新
       await checkCurrentCheckIn()
       
-      // 撮影画面へ遷移
-      setTimeout(() => {
-        router.push('/capture')
-      }, 2000)
+      // 自動遷移を削除 - ユーザーが自分のタイミングで記録画面へ移動できるように
     } catch (error) {
       console.error('Check-in error:', error)
       toast.error('チェックインに失敗しました')
