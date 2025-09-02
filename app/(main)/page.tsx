@@ -49,6 +49,9 @@ export default function HomePage() {
       .eq('user_id', userId)
       .single()
     
+    console.log('Profile data:', data)
+    console.log('Selected character:', data?.selected_character)
+    
     // selected_characterがない場合はデフォルトを設定
     if (data && !data.selected_character) {
       const { error } = await supabase
@@ -175,45 +178,36 @@ export default function HomePage() {
           </div>
 
           {/* 選択中のキャラクター */}
-          <div className="flex items-center justify-center py-3">
+          <div className="flex flex-col items-center justify-center py-3 gap-2">
             <motion.div
               animate={{ y: [0, -5, 0] }}
               transition={{ duration: 2, repeat: Infinity }}
-              className="relative"
+              className="w-20 h-20 bg-gradient-to-br from-blue-100 to-purple-100 rounded-full flex items-center justify-center shadow-lg"
             >
-              <div className="w-20 h-20 bg-gradient-to-br from-blue-100 to-purple-100 rounded-full flex items-center justify-center shadow-lg">
-                <div style={{ fontSize: '2.5rem', lineHeight: '1', fontFamily: 'Apple Color Emoji, Segoe UI Emoji, system-ui, -apple-system, sans-serif' }}>
-                  {(() => {
-                    const char = profile?.selected_character || 'premol'
-                    switch(char) {
-                      case 'premol': return '🍺'
-                      case 'kakuhai': return '🥃'
-                      case 'midori': return '🍸'
-                      case 'lemon': return '🍋'
-                      case 'allfree': return '🍻'
-                      case 'tennensui': return '💧'
-                      default: return '🍺'
-                    }
-                  })()}
-                </div>
-              </div>
-              <div className="absolute -bottom-1 left-1/2 -translate-x-1/2 bg-gradient-to-r from-blue-500 to-purple-500 text-white px-2 py-0.5 rounded-full shadow-sm">
-                <span className="text-xs font-semibold">
-                  {(() => {
-                    const char = profile?.selected_character || 'premol'
-                    switch(char) {
-                      case 'premol': return 'プレモルくん'
-                      case 'kakuhai': return '角ハイ坊や'
-                      case 'midori': return '翠ジン妖精'
-                      case 'lemon': return 'レモンサワー兄弟'
-                      case 'allfree': return 'オールフリー先生'
-                      case 'tennensui': return '天然水スピリット'
-                      default: return 'プレモルくん'
-                    }
-                  })()}
-                </span>
-              </div>
+              <span className="text-5xl" style={{ fontFamily: 'system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", "Noto Sans", "Liberation Sans", Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji"' }}>
+                {profile?.selected_character === 'kakuhai' ? '🥃' :
+                 profile?.selected_character === 'midori' ? '🍸' :
+                 profile?.selected_character === 'lemon' ? '🍋' :
+                 profile?.selected_character === 'allfree' ? '🍻' :
+                 profile?.selected_character === 'tennensui' ? '💧' : '🍺'}
+              </span>
             </motion.div>
+            <div className="bg-gradient-to-r from-blue-500 to-purple-500 text-white px-2 py-0.5 rounded-full shadow-sm">
+              <span className="text-xs font-semibold">
+                {(() => {
+                  const char = profile?.selected_character || 'premol'
+                  switch(char) {
+                    case 'premol': return 'プレモルくん'
+                    case 'kakuhai': return '角ハイ坊や'
+                    case 'midori': return '翠ジン妖精'
+                    case 'lemon': return 'レモンサワー兄弟'
+                    case 'allfree': return 'オールフリー先生'
+                    case 'tennensui': return '天然水スピリット'
+                    default: return 'プレモルくん'
+                  }
+                })()}
+              </span>
+            </div>
           </div>
 
           {/* クイックスタッツ */}

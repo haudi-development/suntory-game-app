@@ -2,7 +2,6 @@
 
 import { useState, useEffect } from 'react'
 import { createClient } from '@/lib/supabase/client'
-import AdminLayout from '@/components/admin/AdminLayout'
 import { MapPin, Users, TrendingUp, Clock, Edit, Trash2, Plus, Search, Filter } from 'lucide-react'
 import toast, { Toaster } from 'react-hot-toast'
 import { motion } from 'framer-motion'
@@ -132,7 +131,7 @@ export default function AdminVenuesPage() {
   }
 
   return (
-    <AdminLayout>
+    <>
       <Toaster position="top-center" />
       
       <div className="p-6">
@@ -488,6 +487,6 @@ export default function AdminVenuesPage() {
           </motion.div>
         </div>
       )}
-    </AdminLayout>
+    </>
   )
 }

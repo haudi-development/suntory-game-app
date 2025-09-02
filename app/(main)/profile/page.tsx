@@ -4,10 +4,10 @@ import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 import { CHARACTERS } from '@/lib/characters'
-import { LogOut, Award, Calendar, Check, Sparkles } from 'lucide-react'
+import { LogOut, Award, Calendar, Check, Sparkles, X, MapPin, Clock, Camera } from 'lucide-react'
 import Link from 'next/link'
 import toast, { Toaster } from 'react-hot-toast'
-import { motion } from 'framer-motion'
+import { motion, AnimatePresence } from 'framer-motion'
 
 const BADGES = [
   { id: 'first_drink', name: 'はじめての一杯', icon: '🍺', description: '初回記録' },
@@ -37,6 +37,7 @@ export default function ProfilePage() {
   const [userCharacters, setUserCharacters] = useState<any[]>([])
   const [userBadges, setUserBadges] = useState<string[]>([])
   const [recentActivity, setRecentActivity] = useState<any[]>([])
+  const [selectedActivity, setSelectedActivity] = useState<any>(null)
   const [loading, setLoading] = useState(true)
   const router = useRouter()
   const supabase = createClient()
@@ -338,7 +339,8 @@ export default function ProfilePage() {
                     initial={{ opacity: 0, x: -20 }}
                     animate={{ opacity: 1, x: 0 }}
                     transition={{ delay: index * 0.1 }}
-                    className="flex items-center gap-3 p-3 bg-gray-50 rounded-xl hover:bg-gray-100 transition-colors"
+                    onClick={() => setSelectedActivity(activity)}
+                    className="flex items-center gap-3 p-3 bg-gray-50 rounded-xl hover:bg-gray-100 transition-colors cursor-pointer"
                   >
                     <div className="text-2xl">{productEmoji}</div>
                     <div className="flex-1">
@@ -366,6 +368,157 @@ export default function ProfilePage() {
           </div>
         </motion.div>
       </div>
+
+      {/* アクティビティ詳細モーダル */}
+      <AnimatePresence>
+        {selectedActivity && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4"
+            onClick={() => setSelectedActivity(null)}
+          >
+            <motion.div
+              initial={{ scale: 0.9, y: 20 }}
+              animate={{ scale: 1, y: 0 }}
+              exit={{ scale: 0.9, y: 20 }}
+              onClick={(e) => e.stopPropagation()}
+              className="bg-white rounded-3xl max-w-md w-full max-h-[90vh] overflow-y-auto"
+            >
+              {/* モーダルヘッダー */}
+              <div className="sticky top-0 bg-gradient-to-r from-blue-500 to-purple-600 p-4 rounded-t-3xl">
+                <div className="flex items-center justify-between">
+                  <h3 className="text-lg font-bold text-white">記録の詳細</h3>
+                  <button
+                    onClick={() => setSelectedActivity(null)}
+                    className="p-2 bg-white/20 rounded-full hover:bg-white/30 transition-colors"
+                  >
+                    <X className="text-white" size={20} />
+                  </button>
+                </div>
+              </div>
+
+              <div className="p-6 space-y-4">
+                {/* 写真エリア */}
+                {selectedActivity.image_url ? (
+                  <div className="relative rounded-2xl overflow-hidden bg-gray-100">
+                    <img
+                      src={selectedActivity.image_url}
+                      alt="記録写真"
+                      className="w-full h-64 object-cover"
+                    />
+                  </div>
+                ) : (
+                  <div className="bg-gradient-to-br from-gray-100 to-gray-200 rounded-2xl h-64 flex items-center justify-center">
+                    <div className="text-center">
+                      <Camera className="text-gray-400 mx-auto mb-2" size={48} />
+                      <p className="text-gray-500 text-sm">写真はありません</p>
+                    </div>
+                  </div>
+                )}
+
+                {/* 商品情報 */}
+                <div className="bg-gradient-to-r from-blue-50 to-purple-50 rounded-2xl p-4">
+                  <div className="flex items-center gap-3 mb-3">
+                    <div className="text-3xl">
+                      {{
+                        'draft_beer': '🍺',
+                        'highball': '🥃',
+                        'sour': '🍋',
+                        'wine': '🍷',
+                        'sake': '🍶',
+                        'soft_drink': '🥤',
+                        'can_beer': '🍻',
+                        'can_highball': '🥃',
+                        'bottled_water': '💧'
+                      }[selectedActivity.product_type] || '🍹'}
+                    </div>
+                    <div>
+                      <h4 className="font-bold text-lg">
+                        {selectedActivity.product_name || 'ドリンク'}
+                      </h4>
+                      <p className="text-sm text-gray-600">
+                        {selectedActivity.brand_name || 'サントリー'}
+                      </p>
+                    </div>
+                  </div>
+                  <div className="grid grid-cols-2 gap-3 text-sm">
+                    <div className="bg-white rounded-lg p-2">
+                      <p className="text-gray-500 text-xs">タイプ</p>
+                      <p className="font-medium">{selectedActivity.product_type || '不明'}</p>
+                    </div>
+                    <div className="bg-white rounded-lg p-2">
+                      <p className="text-gray-500 text-xs">容量</p>
+                      <p className="font-medium">{selectedActivity.volume_ml || 0}ml</p>
+                    </div>
+                  </div>
+                </div>
+
+                {/* 店舗情報 */}
+                <div className="bg-gradient-to-r from-green-50 to-emerald-50 rounded-2xl p-4">
+                  <div className="flex items-center gap-2 mb-2">
+                    <MapPin className="text-green-600" size={20} />
+                    <h4 className="font-bold">店舗情報</h4>
+                  </div>
+                  <p className="font-medium">
+                    {selectedActivity.venues?.name || selectedActivity.venue_name || '未設定'}
+                  </p>
+                  {selectedActivity.venues?.address && (
+                    <p className="text-sm text-gray-600 mt-1">
+                      {selectedActivity.venues.address}
+                    </p>
+                  )}
+                </div>
+
+                {/* ポイントと時間 */}
+                <div className="grid grid-cols-2 gap-3">
+                  <div className="bg-gradient-to-r from-yellow-50 to-orange-50 rounded-2xl p-4">
+                    <div className="flex items-center gap-2 mb-1">
+                      <Sparkles className="text-yellow-600" size={16} />
+                      <p className="text-sm text-gray-600">獲得ポイント</p>
+                    </div>
+                    <p className="text-2xl font-bold text-yellow-600">
+                      +{selectedActivity.points_earned}pt
+                    </p>
+                  </div>
+                  <div className="bg-gradient-to-r from-purple-50 to-pink-50 rounded-2xl p-4">
+                    <div className="flex items-center gap-2 mb-1">
+                      <Clock className="text-purple-600" size={16} />
+                      <p className="text-sm text-gray-600">記録日時</p>
+                    </div>
+                    <p className="text-sm font-medium">
+                      {new Date(selectedActivity.created_at).toLocaleDateString('ja-JP')}
+                    </p>
+                    <p className="text-xs text-gray-500">
+                      {new Date(selectedActivity.created_at).toLocaleTimeString('ja-JP', { 
+                        hour: '2-digit', 
+                        minute: '2-digit' 
+                      })}
+                    </p>
+                  </div>
+                </div>
+
+                {/* AI判定情報 */}
+                {selectedActivity.ai_confidence && (
+                  <div className="bg-gray-50 rounded-2xl p-4">
+                    <p className="text-xs text-gray-500 mb-2">AI判定信頼度</p>
+                    <div className="w-full bg-gray-200 rounded-full h-2">
+                      <div 
+                        className="bg-gradient-to-r from-blue-400 to-purple-500 h-2 rounded-full"
+                        style={{ width: `${selectedActivity.ai_confidence * 100}%` }}
+                      />
+                    </div>
+                    <p className="text-xs text-gray-600 mt-1">
+                      {Math.round(selectedActivity.ai_confidence * 100)}%
+                    </p>
+                  </div>
+                )}
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   )
 }
