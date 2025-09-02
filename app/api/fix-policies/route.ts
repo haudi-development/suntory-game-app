@@ -61,14 +61,8 @@ CREATE POLICY "Admins can update all profiles" ON profiles
 
 export async function POST() {
   try {
-    const supabase = await createServerComponentClient()
+    // 認証チェックを削除（セットアップ用なのでログイン不要）
     
-    // 認証チェック
-    const { data: { user } } = await supabase.auth.getUser()
-    if (!user) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
-    }
-
     // Supabaseのダッシュボードから手動で実行する必要があるSQL
     return NextResponse.json({
       success: false,

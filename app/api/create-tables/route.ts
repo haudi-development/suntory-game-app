@@ -132,14 +132,8 @@ $$ LANGUAGE plpgsql SECURITY DEFINER;
 
 export async function POST() {
   try {
-    const supabase = await createServerComponentClient()
+    // 認証チェックを削除（セットアップ用なのでログイン不要）
     
-    // 認証チェック
-    const { data: { user } } = await supabase.auth.getUser()
-    if (!user) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
-    }
-
     return NextResponse.json({
       success: false,
       message: 'テーブル作成SQLを生成しました',
