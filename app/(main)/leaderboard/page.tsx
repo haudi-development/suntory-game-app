@@ -43,6 +43,9 @@ export default function LeaderboardPage() {
         .from('profiles')
         .select('*')
       
+      console.log('=== LEADERBOARD DEBUG ===')
+      console.log('Current user:', currentUser)
+      console.log('Time range:', timeRange)
       console.log('All profiles:', allProfiles)
       console.log('Profile error:', profileError)
       
@@ -145,11 +148,15 @@ export default function LeaderboardPage() {
           .order('total_points', { ascending: false })
           .limit(50)
 
-        console.log('Ranking data:', data)
-        console.log('Ranking error:', error)
+        console.log('Final ranking data:', data)
+        console.log('Final ranking error:', error)
+        console.log('Data length:', data?.length)
+        console.log('Data with points:', data?.filter(p => p.total_points > 0))
         
         // total_pointsが0より大きいユーザーのみ表示
         const validRankings = data?.filter(profile => profile.total_points > 0) || []
+        console.log('Valid rankings:', validRankings)
+        console.log('Valid rankings length:', validRankings.length)
         setRankings(validRankings)
         
         // 自分の順位を探す
