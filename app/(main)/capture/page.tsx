@@ -249,29 +249,46 @@ export default function CapturePage() {
   }
 
   return (
-    <div className="min-h-screen bg-[var(--background)]">
-      <div className="gradient-bg text-white p-4 mb-6">
-        <div className="max-w-md mx-auto">
-          <h1 className="text-2xl font-bold text-center">飲み物を記録</h1>
-          <p className="text-center text-sm mt-2 opacity-90">
-            {isCheckedIn ? '店舗メニューから選択できます' : 'AIが自動で解析します'}
-          </p>
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50">
+      {/* ヘッダー */}
+      <div className="relative overflow-hidden bg-gradient-to-br from-blue-400 to-purple-600">
+        <div className="absolute inset-0">
+          <div className="absolute top-10 left-10 w-32 h-32 bg-yellow-400 rounded-full opacity-20 blur-xl animate-pulse" />
+          <div className="absolute bottom-10 right-10 w-40 h-40 bg-blue-400 rounded-full opacity-20 blur-xl animate-pulse" />
+        </div>
+        
+        <div className="relative z-10 px-4 pt-6 pb-12">
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="text-center text-white"
+          >
+            <div className="text-xs font-semibold text-white/80 mb-2">KANPAI! by Suntory</div>
+            <h1 className="text-2xl font-bold mb-2">飲み物を記録</h1>
+            <p className="text-white/80 text-sm">
+              {isCheckedIn ? '店舗メニューから選択できます' : 'AIが自動で解析します'}
+            </p>
+          </motion.div>
         </div>
       </div>
 
       {/* チェックイン状態表示 */}
       {isCheckedIn && currentCheckIn && (
-        <div className="bg-green-50 border-b border-green-200 p-3 mb-4">
+        <motion.div
+          initial={{ opacity: 0, y: -20 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="bg-green-50 border-b-2 border-green-200 p-4 mb-6"
+        >
           <div className="max-w-md mx-auto flex items-center gap-2 text-green-700">
             <MapPin className="w-4 h-4" />
             <span className="text-sm font-medium">
-              {currentCheckIn.venue?.name}にチェックイン中
+              {currentCheckIn.venue?.name}にチェックイン中 - ボーナス2倍！
             </span>
           </div>
-        </div>
+        </motion.div>
       )}
 
-      <div className="max-w-md mx-auto px-4">
+      <div className="max-w-md mx-auto px-4 -mt-6 relative z-20">
         <input
           ref={fileInputRef}
           type="file"
@@ -282,36 +299,56 @@ export default function CapturePage() {
         />
 
         {!image && !analyzing && (
-          <div className="card">
+          <motion.div
+            initial={{ opacity: 0, y: 40 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="bg-white rounded-3xl p-6 shadow-xl mb-6"
+          >
             <button
               onClick={() => fileInputRef.current?.click()}
-              className="w-full h-64 border-2 border-dashed border-primary rounded-xl flex flex-col items-center justify-center hover:bg-primary/5 transition-colors"
+              className="w-full h-64 border-2 border-dashed border-primary rounded-xl flex flex-col items-center justify-center hover:bg-primary/5 transition-all duration-300 hover:scale-105"
             >
-              <Camera size={48} className="text-primary mb-4" />
-              <span className="text-primary-dark font-medium">タップして撮影</span>
-              <span className="text-sm text-gray-500 mt-2">または画像を選択</span>
+              <motion.div
+                animate={{ scale: [1, 1.1, 1] }}
+                transition={{ duration: 2, repeat: Infinity }}
+                className="text-primary mb-4"
+              >
+                <Camera size={48} />
+              </motion.div>
+              <span className="text-primary-dark font-medium text-lg mb-2">タップして撮影</span>
+              <span className="text-sm text-gray-500">または画像を選択</span>
             </button>
-          </div>
+          </motion.div>
         )}
 
         {analyzing && (
-          <div className="card">
+          <motion.div
+            initial={{ opacity: 0, y: 40 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="bg-white rounded-3xl p-6 shadow-xl mb-6"
+          >
             <div className="flex flex-col items-center justify-center h-64">
-              <Loader2 className="animate-spin text-primary mb-4" size={48} />
-              <p className="text-primary-dark font-medium">解析中...</p>
+              <motion.div
+                animate={{ rotate: 360 }}
+                transition={{ duration: 2, repeat: Infinity, ease: "linear" }}
+                className="text-primary mb-4"
+              >
+                <Loader2 size={48} />
+              </motion.div>
+              <p className="text-primary-dark font-medium text-lg">AI解析中...</p>
               <p className="text-sm text-gray-500 mt-2">少々お待ちください</p>
             </div>
-          </div>
+          </motion.div>
         )}
 
         {image && !analyzing && (
           <AnimatePresence>
             <motion.div
-              initial={{ opacity: 0, y: 20 }}
+              initial={{ opacity: 0, y: 40 }}
               animate={{ opacity: 1, y: 0 }}
-              className="space-y-4"
+              className="space-y-6"
             >
-              <div className="card">
+              <div className="bg-white rounded-3xl p-6 shadow-xl">
                 <img
                   src={image}
                   alt="Captured"
@@ -451,14 +488,26 @@ export default function CapturePage() {
           </div>
         )}
 
-        <div className="mt-6 card">
-          <h3 className="font-bold mb-2">撮影のコツ</h3>
-          <ul className="text-sm text-gray-600 space-y-1">
-            <li>• 商品ラベルが見えるように撮影</li>
-            <li>• 明るい場所で撮影</li>
-            <li>• 複数本ある場合は全体を撮影</li>
-          </ul>
-        </div>
+        <motion.div
+          initial={{ opacity: 0, y: 40 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.2 }}
+          className="mt-6 bg-white rounded-3xl p-6 shadow-xl"
+        >
+          <h3 className="font-bold mb-3 text-primary-dark">📸 撮影のコツ</h3>
+          <div className="space-y-2">
+            {[
+              '商品ラベルが見えるように撮影',
+              '明るい場所で撮影', 
+              '複数本ある場合は全体を撮影'
+            ].map((tip, index) => (
+              <div key={index} className="flex items-center gap-2">
+                <div className="w-2 h-2 bg-primary rounded-full"></div>
+                <span className="text-sm text-gray-600">{tip}</span>
+              </div>
+            ))}
+          </div>
+        </motion.div>
       </div>
 
       <ManualSelectionModal

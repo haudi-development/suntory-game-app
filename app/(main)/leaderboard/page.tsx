@@ -193,24 +193,24 @@ export default function LeaderboardPage() {
       <Toaster position="top-center" />
       
       {/* ヘッダー */}
-      <div className="relative overflow-hidden">
-        <div className="absolute inset-0 bg-gradient-to-br from-purple-600 to-blue-600 opacity-90" />
+      <div className="relative overflow-hidden bg-gradient-to-br from-blue-400 to-purple-600">
         <div className="absolute inset-0">
-          <div className="absolute top-10 left-10 w-32 h-32 bg-yellow-400 rounded-full opacity-30 blur-xl animate-pulse" />
-          <div className="absolute bottom-10 right-10 w-40 h-40 bg-pink-400 rounded-full opacity-30 blur-xl animate-pulse" />
+          <div className="absolute top-10 left-10 w-32 h-32 bg-yellow-400 rounded-full opacity-20 blur-xl animate-pulse" />
+          <div className="absolute bottom-10 right-10 w-40 h-40 bg-pink-400 rounded-full opacity-20 blur-xl animate-pulse" />
         </div>
         
-        <motion.div
-          initial={{ opacity: 0, y: -20 }}
-          animate={{ opacity: 1, y: 0 }}
-          className="relative z-10 p-6 text-white"
-        >
-          <div className="max-w-md mx-auto text-center">
-            <h1 className="text-3xl font-bold mb-2 flex items-center justify-center gap-2">
-              <Trophy className="text-yellow-400" size={32} />
+        <div className="relative z-10 px-4 pt-6 pb-16">
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="text-center text-white"
+          >
+            <div className="text-xs font-semibold text-white/80 mb-2">KANPAI! by Suntory</div>
+            <h1 className="text-2xl font-bold mb-2 flex items-center justify-center gap-2">
+              <Trophy className="text-yellow-400" size={28} />
               ランキング
             </h1>
-            <p className="text-white/80">
+            <p className="text-white/80 text-sm mb-4">
               全国のサントリー飲活仲間と競おう！
             </p>
             {myRank && (
@@ -218,41 +218,52 @@ export default function LeaderboardPage() {
                 initial={{ scale: 0 }}
                 animate={{ scale: 1 }}
                 transition={{ type: "spring", delay: 0.2 }}
-                className="mt-4 inline-block"
+                className="inline-block"
               >
                 <div className="bg-white/20 backdrop-blur-md px-4 py-2 rounded-full">
-                  <span className="text-lg font-bold">あなたの順位: </span>
-                  <span className="text-2xl font-bold text-yellow-400">{myRank}</span>
-                  <span className="text-lg">位</span>
+                  <span className="text-sm font-bold">あなたの順位: </span>
+                  <span className="text-xl font-bold text-yellow-400">{myRank}</span>
+                  <span className="text-sm">位</span>
                 </div>
               </motion.div>
             )}
-          </div>
-        </motion.div>
+          </motion.div>
+        </div>
       </div>
 
-      <div className="max-w-md mx-auto px-4">
+      <div className="max-w-md mx-auto px-4 -mt-8 relative z-20">
         {/* 期間選択タブ */}
-        <div className="flex mb-4 bg-white rounded-lg p-1 shadow-sm">
+        <motion.div
+          initial={{ opacity: 0, y: 40 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="flex mb-6 bg-white rounded-2xl p-1 shadow-xl"
+        >
           {(['daily', 'weekly', 'monthly', 'all'] as const).map((range) => (
-            <button
+            <motion.button
               key={range}
+              whileHover={{ scale: 1.02 }}
+              whileTap={{ scale: 0.98 }}
               onClick={() => setTimeRange(range)}
-              className={`flex-1 py-2 px-4 rounded-md transition-colors ${
+              className={`flex-1 py-2 px-3 rounded-xl transition-all text-sm font-medium ${
                 timeRange === range 
-                  ? 'bg-primary text-white' 
-                  : 'text-gray-600 hover:text-primary'
+                  ? 'bg-gradient-to-r from-primary to-primary-dark text-white shadow-lg' 
+                  : 'text-gray-600 hover:text-primary hover:bg-primary/5'
               }`}
             >
               {range === 'daily' ? 'デイリー' : 
                range === 'weekly' ? '週間' : 
                range === 'monthly' ? '月間' : '総合'}
-            </button>
+            </motion.button>
           ))}
-        </div>
+        </motion.div>
 
         {/* ランキングリスト */}
-        <div className="card">
+        <motion.div
+          initial={{ opacity: 0, y: 40 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.1 }}
+          className="bg-white rounded-3xl p-6 shadow-xl mb-6"
+        >
           {loading ? (
             <div className="text-center py-8">
               <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto"></div>
@@ -264,17 +275,18 @@ export default function LeaderboardPage() {
             </div>
           ) : (
             <div className="space-y-3">
-              {console.log('Rendering rankings:', rankings)}
               {rankings.map((user, index) => {
-                console.log(`Rendering user ${index}:`, user)
                 const isMe = user.user_id === currentUser?.id
                 const points = getPoints(user)
                 
                 return (
-                  <div 
-                    key={user.user_id} 
-                    className={`flex items-center justify-between p-3 rounded-lg transition-colors
-                      ${isMe ? 'bg-primary/10 border-2 border-primary' : 'bg-gray-50'}
+                  <motion.div 
+                    key={user.user_id}
+                    initial={{ opacity: 0, x: -20 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    transition={{ delay: index * 0.05 }}
+                    className={`flex items-center justify-between p-4 rounded-2xl transition-all hover:scale-105
+                      ${isMe ? 'bg-gradient-to-r from-primary/20 to-primary/10 border-2 border-primary shadow-md' : 'bg-gray-50 hover:bg-gray-100'}
                     `}
                   >
                     <div className="flex items-center gap-3">
@@ -298,28 +310,45 @@ export default function LeaderboardPage() {
                       </div>
                     </div>
                     <div className="text-right">
-                      <p className="font-bold text-primary-dark">{points}pt</p>
+                      <p className="font-bold text-primary-dark text-lg">{points}pt</p>
                       {timeRange !== 'all' && (
                         <p className="text-xs text-gray-500">総合: {user.total_points}pt</p>
                       )}
                     </div>
-                  </div>
+                  </motion.div>
                 )
               })}
             </div>
           )}
-        </div>
+        </motion.div>
 
         {/* 報酬説明 */}
-        <div className="mt-6 card">
-          <h3 className="font-bold mb-2">🏆 ランキング報酬</h3>
-          <div className="space-y-1 text-sm text-gray-600">
-            <p>• 1位: レジェンドバッジ + 特別キャラクター</p>
-            <p>• 2-3位: チャンピオンバッジ</p>
-            <p>• 4-10位: エリートバッジ</p>
-            <p>• 週間TOP10: ボーナスポイント付与</p>
+        <motion.div
+          initial={{ opacity: 0, y: 40 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.2 }}
+          className="bg-white rounded-3xl p-6 shadow-xl"
+        >
+          <h3 className="font-bold mb-4 text-primary-dark text-lg">🏆 ランキング報酬</h3>
+          <div className="space-y-3">
+            {[
+              { rank: '1位', reward: 'レジェンドバッジ + 特別キャラクター', color: 'from-yellow-100 to-yellow-200 border-yellow-300' },
+              { rank: '2-3位', reward: 'チャンピオンバッジ', color: 'from-gray-100 to-gray-200 border-gray-300' },
+              { rank: '4-10位', reward: 'エリートバッジ', color: 'from-orange-100 to-orange-200 border-orange-300' },
+              { rank: '週間TOP10', reward: 'ボーナスポイント付与', color: 'from-purple-100 to-purple-200 border-purple-300' }
+            ].map((item, index) => (
+              <div key={index} className={`bg-gradient-to-r ${item.color} p-3 rounded-xl border`}>
+                <div className="flex justify-between items-center">
+                  <span className="font-semibold text-sm">{item.rank}</span>
+                  <span className="text-sm text-gray-700">{item.reward}</span>
+                </div>
+              </div>
+            ))}
           </div>
-        </div>
+        </motion.div>
+        
+        {/* ボトムスペーシング */}
+        <div className="pb-24"></div>
       </div>
     </div>
   )

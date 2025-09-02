@@ -93,23 +93,26 @@ export default function HomePage() {
       <Toaster position="top-center" />
       
       {/* ヘッダー */}
-      <div className="relative overflow-hidden">
-        <div className="absolute inset-0 bg-gradient-to-br from-blue-400 to-purple-600 opacity-90" />
+      <div className="relative overflow-hidden bg-gradient-to-br from-blue-400 to-purple-600">
         <div className="absolute inset-0">
-          <div className="absolute top-10 left-10 w-32 h-32 bg-yellow-400 rounded-full opacity-30 blur-xl animate-pulse" />
-          <div className="absolute bottom-10 right-10 w-40 h-40 bg-blue-400 rounded-full opacity-30 blur-xl animate-pulse" />
+          <div className="absolute top-10 left-10 w-32 h-32 bg-yellow-400 rounded-full opacity-20 blur-xl animate-pulse" />
+          <div className="absolute bottom-10 right-10 w-40 h-40 bg-blue-400 rounded-full opacity-20 blur-xl animate-pulse" />
         </div>
         
-        <div className="relative z-10 px-4 pt-8 pb-20">
+        <div className="relative z-10 px-4 pt-6 pb-20">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             className="text-center text-white"
           >
+            <div className="text-xs font-semibold text-white/80 mb-2">KANPAI! by Suntory</div>
             <h1 className="text-2xl font-bold mb-2">
-              おかえりなさい、{profile?.display_name || 'ゲスト'}さん！
+              おかえりなさい！
             </h1>
-            <p className="text-white/80">今日も素敵な一日を🍻</p>
+            <p className="text-lg font-medium">
+              {profile?.display_name || profile?.nickname || 'ユーザー'}さん
+            </p>
+            <p className="text-white/80 text-sm mt-2">今日も素敵な一日を🍻</p>
           </motion.div>
         </div>
       </div>
@@ -121,64 +124,65 @@ export default function HomePage() {
         transition={{ delay: 0.1 }}
         className="px-4 -mt-12 mb-6 relative z-20"
       >
-        <div className="glass rounded-3xl p-6 shadow-xl">
+        <div className="bg-white rounded-3xl p-5 shadow-xl">
           {/* レベルとポイント */}
-          <div className="flex items-center justify-between mb-6">
+          <div className="flex items-center justify-between mb-4">
             <div>
-              <p className="text-sm text-gray-600 mb-1">現在のレベル</p>
+              <p className="text-xs text-gray-500 mb-1">現在のレベル</p>
               <div className="flex items-baseline gap-2">
-                <span className="text-4xl font-bold text-gradient">
+                <span className="text-3xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
                   Lv.{Math.floor((profile?.total_points || 0) / 100) + 1}
                 </span>
-                <Sparkles className="text-yellow-500 animate-pulse" size={20} />
+                <Sparkles className="text-yellow-500 animate-pulse" size={18} />
               </div>
             </div>
             <div className="text-right">
-              <p className="text-sm text-gray-600 mb-1">総ポイント</p>
-              <span className="text-3xl font-bold text-gradient-gold">
-                {profile?.total_points || 0}
-              </span>
-              <span className="text-sm text-gray-600 ml-1">pt</span>
+              <p className="text-xs text-gray-500 mb-1">総ポイント</p>
+              <div className="flex items-baseline">
+                <span className="text-2xl font-bold bg-gradient-to-r from-yellow-500 to-orange-500 bg-clip-text text-transparent">
+                  {profile?.total_points || 0}
+                </span>
+                <span className="text-sm text-gray-500 ml-1">pt</span>
+              </div>
             </div>
           </div>
 
           {/* プログレスバー */}
-          <div className="mb-6">
-            <div className="flex justify-between text-xs text-gray-600 mb-2">
+          <div className="mb-4">
+            <div className="flex justify-between text-xs text-gray-500 mb-1">
               <span>次のレベルまで</span>
-              <span>{100 - ((profile?.total_points || 0) % 100)} pt</span>
+              <span className="font-semibold">{100 - ((profile?.total_points || 0) % 100)} pt</span>
             </div>
-            <div className="h-3 bg-gray-200 rounded-full overflow-hidden">
+            <div className="h-2 bg-gray-100 rounded-full overflow-hidden">
               <motion.div
                 initial={{ width: 0 }}
                 animate={{ width: `${((profile?.total_points || 0) % 100)}%` }}
                 transition={{ duration: 1, ease: "easeOut" }}
-                className="h-full rounded-full"
-                style={{ background: 'var(--gradient-gold)' }}
+                className="h-full bg-gradient-to-r from-yellow-400 to-orange-500 rounded-full"
               />
             </div>
           </div>
 
           {/* 選択中のキャラクター */}
           {profile?.selected_character && (
-            <div className="flex items-center justify-center mb-4">
+            <div className="flex items-center justify-center py-3">
               <motion.div
-                animate={{ y: [0, -10, 0] }}
+                animate={{ y: [0, -5, 0] }}
                 transition={{ duration: 2, repeat: Infinity }}
                 className="relative"
               >
                 <Image
                   src={`/characters/${profile.selected_character}/level1.png`}
                   alt="Character"
-                  width={120}
-                  height={120}
-                  className="drop-shadow-lg"
+                  width={80}
+                  height={80}
+                  className="drop-shadow-md"
                   onError={(e) => {
                     e.currentTarget.src = '/characters/premol/level1.png'
                   }}
                 />
-                <div className="absolute -bottom-2 left-1/2 -translate-x-1/2 bg-white px-3 py-1 rounded-full shadow-md">
-                  <span className="text-xs font-bold text-gray-700">
+                <div className="absolute -bottom-1 left-1/2 -translate-x-1/2 bg-gradient-to-r from-blue-500 to-purple-500 text-white px-2 py-0.5 rounded-full shadow-sm">
+                  <span className="text-xs font-semibold">
                     {profile.selected_character}
                   </span>
                 </div>
@@ -187,16 +191,17 @@ export default function HomePage() {
           )}
 
           {/* クイックスタッツ */}
-          <div className="grid grid-cols-2 gap-3">
+          <div className="grid grid-cols-2 gap-2">
             <motion.div
-              whileHover={{ scale: 1.05 }}
-              className="bg-gradient-to-r from-blue-50 to-blue-100 rounded-2xl p-3"
+              whileHover={{ scale: 1.02 }}
+              whileTap={{ scale: 0.98 }}
+              className="bg-gradient-to-br from-blue-50 to-blue-100 rounded-xl p-3 border border-blue-200"
             >
               <div className="flex items-center gap-2">
-                <TrendingUp className="text-blue-600" size={20} />
+                <TrendingUp className="text-blue-600" size={18} />
                 <div>
                   <p className="text-xs text-gray-600">今日の獲得</p>
-                  <p className="text-lg font-bold text-blue-600">
+                  <p className="text-base font-bold text-blue-600">
                     {stats.todayPoints} pt
                   </p>
                 </div>
@@ -204,14 +209,15 @@ export default function HomePage() {
             </motion.div>
 
             <motion.div
-              whileHover={{ scale: 1.05 }}
-              className="bg-gradient-to-r from-purple-50 to-purple-100 rounded-2xl p-3"
+              whileHover={{ scale: 1.02 }}
+              whileTap={{ scale: 0.98 }}
+              className="bg-gradient-to-br from-purple-50 to-purple-100 rounded-xl p-3 border border-purple-200"
             >
               <div className="flex items-center gap-2">
-                <Trophy className="text-purple-600" size={20} />
+                <Trophy className="text-purple-600" size={18} />
                 <div>
                   <p className="text-xs text-gray-600">週間ランク</p>
-                  <p className="text-lg font-bold text-purple-600">
+                  <p className="text-base font-bold text-purple-600">
                     {stats.weeklyRank}位
                   </p>
                 </div>
@@ -219,14 +225,15 @@ export default function HomePage() {
             </motion.div>
 
             <motion.div
-              whileHover={{ scale: 1.05 }}
-              className="bg-gradient-to-r from-green-50 to-green-100 rounded-2xl p-3"
+              whileHover={{ scale: 1.02 }}
+              whileTap={{ scale: 0.98 }}
+              className="bg-gradient-to-br from-green-50 to-green-100 rounded-xl p-3 border border-green-200"
             >
               <div className="flex items-center gap-2">
-                <Zap className="text-green-600" size={20} />
+                <Zap className="text-green-600" size={18} />
                 <div>
                   <p className="text-xs text-gray-600">連続記録</p>
-                  <p className="text-lg font-bold text-green-600">
+                  <p className="text-base font-bold text-green-600">
                     {stats.currentStreak}日
                   </p>
                 </div>
@@ -234,14 +241,15 @@ export default function HomePage() {
             </motion.div>
 
             <motion.div
-              whileHover={{ scale: 1.05 }}
-              className="bg-gradient-to-r from-yellow-50 to-yellow-100 rounded-2xl p-3"
+              whileHover={{ scale: 1.02 }}
+              whileTap={{ scale: 0.98 }}
+              className="bg-gradient-to-br from-yellow-50 to-yellow-100 rounded-xl p-3 border border-yellow-200"
             >
               <div className="flex items-center gap-2">
-                <Gift className="text-yellow-600" size={20} />
+                <Gift className="text-yellow-600" size={18} />
                 <div>
                   <p className="text-xs text-gray-600">獲得バッジ</p>
-                  <p className="text-lg font-bold text-yellow-600">
+                  <p className="text-base font-bold text-yellow-600">
                     {stats.totalBadges}個
                   </p>
                 </div>

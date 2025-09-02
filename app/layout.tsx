@@ -2,8 +2,8 @@ import type { Metadata, Viewport } from "next";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "サントリー飲活アプリ",
-  description: "飲む瞬間をエンターテインメントに",
+  title: "KANPAI! by Suntory",
+  description: "乾杯の瞬間をもっと楽しく、もっと特別に",
 };
 
 export const viewport: Viewport = {

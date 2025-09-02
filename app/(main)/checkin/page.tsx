@@ -245,13 +245,27 @@ export default function CheckInPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50">
       {/* ヘッダー */}
-      <div className="bg-gradient-to-r from-primary to-primary-dark text-white p-4">
-        <h1 className="text-2xl font-bold">チェックイン</h1>
-        <p className="text-sm opacity-90 mt-1">
-          店舗にチェックインして特別ボーナスをゲット！
-        </p>
+      <div className="relative overflow-hidden bg-gradient-to-br from-blue-400 to-purple-600">
+        <div className="absolute inset-0">
+          <div className="absolute top-10 left-10 w-32 h-32 bg-yellow-400 rounded-full opacity-20 blur-xl animate-pulse" />
+          <div className="absolute bottom-10 right-10 w-40 h-40 bg-blue-400 rounded-full opacity-20 blur-xl animate-pulse" />
+        </div>
+        
+        <div className="relative z-10 px-4 pt-6 pb-12">
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="text-center text-white"
+          >
+            <div className="text-xs font-semibold text-white/80 mb-2">KANPAI! by Suntory</div>
+            <h1 className="text-2xl font-bold mb-2">チェックイン</h1>
+            <p className="text-white/80 text-sm">
+              店舗にチェックインして特別ボーナスをゲット！
+            </p>
+          </motion.div>
+        </div>
       </div>
 
       {/* 現在のチェックイン状態 */}
@@ -285,68 +299,86 @@ export default function CheckInPage() {
         </motion.div>
       )}
 
-      <div className="p-4 space-y-6">
+      <div className="px-4 -mt-6 relative z-20 space-y-6">
         {/* デモモード表示 */}
         {demoMode && (
-          <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-3">
-            <p className="text-sm text-yellow-800">
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="bg-yellow-50 border border-yellow-200 rounded-2xl p-4 shadow-sm"
+          >
+            <p className="text-sm text-yellow-800 text-center">
               🎮 デモモード: ビーコンをシミュレートしています
             </p>
-          </div>
+          </motion.div>
         )}
 
         {/* チェックイン方法 */}
         {!currentCheckIn && (
-          <div className="space-y-3">
-            <h2 className="font-bold text-gray-900">チェックイン方法</h2>
+          <motion.div
+            initial={{ opacity: 0, y: 40 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.1 }}
+            className="bg-white rounded-3xl p-6 shadow-xl space-y-4"
+          >
+            <h2 className="font-bold text-gray-900 text-lg">チェックイン方法</h2>
             
             {/* ビーコン検出 */}
-            <button
+            <motion.button
+              whileHover={{ scale: 1.02 }}
+              whileTap={{ scale: 0.98 }}
               onClick={simulateBeaconScan}
               disabled={scanningBeacon}
-              className="w-full bg-white rounded-xl shadow-sm p-4 flex items-center justify-between hover:shadow-md transition-shadow disabled:opacity-50"
+              className="w-full bg-gradient-to-r from-blue-500 to-blue-600 text-white rounded-xl p-4 flex items-center justify-between hover:from-blue-600 hover:to-blue-700 transition-all shadow-lg disabled:opacity-50"
             >
               <div className="flex items-center gap-3">
-                <div className="w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center">
-                  <Wifi className={`w-6 h-6 text-blue-600 ${scanningBeacon ? 'animate-pulse' : ''}`} />
+                <div className="w-12 h-12 bg-white/20 rounded-full flex items-center justify-center">
+                  <Wifi className={`w-6 h-6 text-white ${scanningBeacon ? 'animate-pulse' : ''}`} />
                 </div>
                 <div className="text-left">
-                  <h3 className="font-semibold text-gray-900">
+                  <h3 className="font-semibold text-white">
                     {scanningBeacon ? 'ビーコンを検索中...' : '自動検出'}
                   </h3>
-                  <p className="text-sm text-gray-500">
+                  <p className="text-sm text-blue-100">
                     店内のビーコンを検出
                   </p>
                 </div>
               </div>
-              <ChevronRight className="w-5 h-5 text-gray-400" />
-            </button>
+              <ChevronRight className="w-5 h-5 text-blue-100" />
+            </motion.button>
 
             {/* QRコード */}
-            <button
+            <motion.button
+              whileHover={{ scale: 1.02 }}
+              whileTap={{ scale: 0.98 }}
               onClick={() => toast.info('QRコード機能は準備中です')}
-              className="w-full bg-white rounded-xl shadow-sm p-4 flex items-center justify-between hover:shadow-md transition-shadow"
+              className="w-full bg-gradient-to-r from-purple-500 to-purple-600 text-white rounded-xl p-4 flex items-center justify-between hover:from-purple-600 hover:to-purple-700 transition-all shadow-lg"
             >
               <div className="flex items-center gap-3">
-                <div className="w-12 h-12 bg-purple-100 rounded-full flex items-center justify-center">
-                  <QrCode className="w-6 h-6 text-purple-600" />
+                <div className="w-12 h-12 bg-white/20 rounded-full flex items-center justify-center">
+                  <QrCode className="w-6 h-6 text-white" />
                 </div>
                 <div className="text-left">
-                  <h3 className="font-semibold text-gray-900">QRコード</h3>
-                  <p className="text-sm text-gray-500">
+                  <h3 className="font-semibold text-white">QRコード</h3>
+                  <p className="text-sm text-purple-100">
                     テーブルのQRをスキャン
                   </p>
                 </div>
               </div>
-              <ChevronRight className="w-5 h-5 text-gray-400" />
-            </button>
-          </div>
+              <ChevronRight className="w-5 h-5 text-purple-100" />
+            </motion.button>
+          </motion.div>
         )}
 
         {/* 近くの店舗 */}
         {!currentCheckIn && (
-          <div className="space-y-3">
-            <h2 className="font-bold text-gray-900">近くの店舗</h2>
+          <motion.div
+            initial={{ opacity: 0, y: 40 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.2 }}
+            className="bg-white rounded-3xl p-6 shadow-xl space-y-4"
+          >
+            <h2 className="font-bold text-gray-900 text-lg">近くの店舗</h2>
             
             <AnimatePresence>
               {nearbyVenues.map((venue, index) => (
@@ -355,11 +387,13 @@ export default function CheckInPage() {
                   initial={{ opacity: 0, x: -20 }}
                   animate={{ opacity: 1, x: 0 }}
                   transition={{ delay: index * 0.1 }}
-                  className="bg-white rounded-xl shadow-sm overflow-hidden"
+                  className="bg-gray-50 rounded-xl shadow-sm overflow-hidden border border-gray-100"
                 >
-                  <button
+                  <motion.button
+                    whileHover={{ scale: 1.02 }}
+                    whileTap={{ scale: 0.98 }}
                     onClick={() => handleCheckIn(venue.id, 'manual')}
-                    className="w-full p-4 flex items-center justify-between hover:bg-gray-50 transition-colors"
+                    className="w-full p-4 flex items-center justify-between hover:bg-gray-100 transition-colors rounded-xl"
                   >
                     <div className="flex items-start gap-3">
                       <div className="w-10 h-10 bg-primary/10 rounded-lg flex items-center justify-center flex-shrink-0">
@@ -385,41 +419,55 @@ export default function CheckInPage() {
                       </div>
                     </div>
                     <ChevronRight className="w-5 h-5 text-gray-400" />
-                  </button>
+                  </motion.button>
                 </motion.div>
               ))}
             </AnimatePresence>
 
             {/* すべての店舗を表示 */}
-            <button
+            <motion.button
+              whileHover={{ scale: 1.02 }}
+              whileTap={{ scale: 0.98 }}
               onClick={() => router.push('/venue')}
-              className="w-full text-center text-primary font-medium py-2"
+              className="w-full text-center text-primary font-medium py-3 bg-primary/10 rounded-xl hover:bg-primary/20 transition-colors"
             >
               すべての店舗を見る →
-            </button>
-          </div>
+            </motion.button>
+          </motion.div>
         )}
 
         {/* チェックイン中の場合のアクション */}
         {currentCheckIn && (
-          <div className="space-y-3">
-            <button
+          <motion.div
+            initial={{ opacity: 0, y: 40 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.3 }}
+            className="bg-white rounded-3xl p-6 shadow-xl space-y-4"
+          >
+            <motion.button
+              whileHover={{ scale: 1.02 }}
+              whileTap={{ scale: 0.98 }}
               onClick={() => router.push('/capture')}
-              className="w-full bg-primary text-white rounded-xl p-4 font-semibold flex items-center justify-center gap-2"
+              className="w-full bg-gradient-to-r from-primary to-primary-dark text-white rounded-xl p-4 font-semibold flex items-center justify-center gap-2 shadow-lg"
             >
               <Beer className="w-5 h-5" />
               飲み物を記録する
-            </button>
+            </motion.button>
             
-            <button
+            <motion.button
+              whileHover={{ scale: 1.02 }}
+              whileTap={{ scale: 0.98 }}
               onClick={() => router.push('/venue/menu')}
-              className="w-full bg-white border-2 border-primary text-primary rounded-xl p-4 font-semibold"
+              className="w-full bg-white border-2 border-primary text-primary rounded-xl p-4 font-semibold hover:bg-primary/5 transition-colors"
             >
               店舗メニューを見る
-            </button>
-          </div>
+            </motion.button>
+          </motion.div>
         )}
       </div>
+      
+      {/* ボトムスペーシング */}
+      <div className="pb-24"></div>
     </div>
   )
 }
