@@ -67,26 +67,32 @@ ALTER TABLE check_ins ENABLE ROW LEVEL SECURITY;
 ALTER TABLE venue_menus ENABLE ROW LEVEL SECURITY;
 ALTER TABLE venue_beacons ENABLE ROW LEVEL SECURITY;
 
--- venuesテーブルのポリシー
-CREATE POLICY IF NOT EXISTS "Anyone can view venues" ON venues
+-- 既存のポリシーを削除してから作成
+DROP POLICY IF EXISTS "Anyone can view venues" ON venues;
+CREATE POLICY "Anyone can view venues" ON venues
   FOR SELECT USING (true);
 
 -- check_insテーブルのポリシー
-CREATE POLICY IF NOT EXISTS "Users can view own check-ins" ON check_ins
+DROP POLICY IF EXISTS "Users can view own check-ins" ON check_ins;
+CREATE POLICY "Users can view own check-ins" ON check_ins
   FOR SELECT USING (auth.uid() = user_id);
 
-CREATE POLICY IF NOT EXISTS "Users can create own check-ins" ON check_ins
+DROP POLICY IF EXISTS "Users can create own check-ins" ON check_ins;
+CREATE POLICY "Users can create own check-ins" ON check_ins
   FOR INSERT WITH CHECK (auth.uid() = user_id);
 
-CREATE POLICY IF NOT EXISTS "Users can update own check-ins" ON check_ins
+DROP POLICY IF EXISTS "Users can update own check-ins" ON check_ins;
+CREATE POLICY "Users can update own check-ins" ON check_ins
   FOR UPDATE USING (auth.uid() = user_id);
 
 -- venue_menusテーブルのポリシー
-CREATE POLICY IF NOT EXISTS "Anyone can view menus" ON venue_menus
+DROP POLICY IF EXISTS "Anyone can view menus" ON venue_menus;
+CREATE POLICY "Anyone can view menus" ON venue_menus
   FOR SELECT USING (true);
 
 -- venue_beaconsテーブルのポリシー
-CREATE POLICY IF NOT EXISTS "Anyone can view beacons" ON venue_beacons
+DROP POLICY IF EXISTS "Anyone can view beacons" ON venue_beacons;
+CREATE POLICY "Anyone can view beacons" ON venue_beacons
   FOR SELECT USING (true);
 
 -- チェックイン/アウト用のRPC関数
