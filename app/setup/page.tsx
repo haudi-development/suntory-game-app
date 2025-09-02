@@ -216,22 +216,32 @@ export default function SetupPage() {
     const logs: string[] = []
 
     try {
+      logs.push('🔄 テーブル作成SQLを生成中...')
+      
       const response = await fetch('/api/create-tables', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
       })
       
       const result = await response.json()
+      console.log('Create tables response:', result)
       
       if (result.sql) {
         logs.push('📋 以下のSQLをSupabaseダッシュボードで実行してください:')
         logs.push('━━━━━━━━━━━━━━━━━━━━━━━━━━━━')
-        result.steps.forEach((step: string) => logs.push(step))
+        if (result.steps && Array.isArray(result.steps)) {
+          result.steps.forEach((step: string) => logs.push(step))
+        }
         logs.push('━━━━━━━━━━━━━━━━━━━━━━━━━━━━')
         logs.push('SQL:')
+        logs.push('```sql')
         // SQLを改行ごとに分割して表示
         const sqlLines = result.sql.split('\n')
         sqlLines.forEach((line: string) => logs.push(line))
+        logs.push('```')
+      } else {
+        logs.push('⚠️ SQLの生成に失敗しました')
+        logs.push(JSON.stringify(result, null, 2))
       }
     } catch (error) {
       console.error('Create tables error:', error)
