@@ -3,6 +3,9 @@ import { NextResponse } from 'next/server'
 
 // テストユーザーとランキングデータを作成
 const CREATE_TEST_DATA_SQL = `
+-- まずprofilesテーブルにdisplay_nameカラムを追加（存在しない場合）
+ALTER TABLE profiles ADD COLUMN IF NOT EXISTS display_name TEXT;
+
 -- テストユーザーのプロファイルを作成
 WITH test_users AS (
   SELECT 
