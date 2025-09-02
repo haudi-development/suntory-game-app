@@ -2,8 +2,11 @@ import { NextResponse } from 'next/server'
 
 // チェックアウト機能の修正SQL
 const FIX_CHECKOUT_SQL = `
--- check_out_from_venue関数を修正
-CREATE OR REPLACE FUNCTION check_out_from_venue(
+-- 既存の関数を削除
+DROP FUNCTION IF EXISTS check_out_from_venue(UUID);
+
+-- check_out_from_venue関数を新規作成
+CREATE FUNCTION check_out_from_venue(
   p_user_id UUID
 ) RETURNS VOID AS $$
 BEGIN
