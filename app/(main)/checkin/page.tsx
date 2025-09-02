@@ -57,18 +57,24 @@ export default function CheckInPage() {
         .order('name')
 
       if (error) throw error
-      setVenues(data || [])
+      
+      const venueList = data || []
+      setVenues(venueList)
       
       // デモ用：ランダムに距離を設定
-      const venuesWithDistance = (data || []).map(v => ({
+      const venuesWithDistance = venueList.map(v => ({
         ...v,
         distance: Math.floor(Math.random() * 3000) + 100 // 100m〜3km
       })).sort((a, b) => a.distance - b.distance)
       
-      setNearbyVenues(venuesWithDistance.slice(0, 3))
+      const nearby = venuesWithDistance.slice(0, 3)
+      setNearbyVenues(nearby)
+      
+      return nearby // 返り値として近くの店舗を返す
     } catch (error) {
       console.error('Error fetching venues:', error)
       toast.error('店舗情報の取得に失敗しました')
+      return []
     } finally {
       setLoading(false)
     }
@@ -101,14 +107,23 @@ export default function CheckInPage() {
     setScanningBeacon(true)
     
     // デモ：3秒後にランダムな店舗を検出
-    setTimeout(() => {
+    setTimeout(async () => {
       setScanningBeacon(false)
-      if (nearbyVenues.length > 0) {
-        const randomVenue = nearbyVenues[0]
-        toast.success(`ビーコン検出: ${randomVenue.name}`)
-        handleCheckIn(randomVenue.id, 'beacon')
+      
+      // 店舗リストを取得（既にある場合はそれを使用）
+      let availableVenues = nearbyVenues
+      if (availableVenues.length === 0) {
+        availableVenues = await fetchVenues()
+      }
+      
+      if (availableVenues.length > 0) {
+        // ランダムに店舗を選択（デモ用）
+        const randomIndex = Math.floor(Math.random() * Math.min(3, availableVenues.length))
+        const selectedVenue = availableVenues[randomIndex]
+        toast.success(`ビーコン検出: ${selectedVenue.name}`)
+        await handleCheckIn(selectedVenue.id, 'beacon')
       } else {
-        toast.error('ビーコンが見つかりませんでした')
+        toast.error('近くに店舗が見つかりませんでした')
       }
     }, 3000)
   }
