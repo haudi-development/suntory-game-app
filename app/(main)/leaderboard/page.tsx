@@ -3,7 +3,9 @@
 import { useEffect, useState } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import { useRouter } from 'next/navigation'
-import { Trophy, Medal, Crown, Star } from 'lucide-react'
+import { Trophy, Medal, Crown, Star, TrendingUp, TrendingDown, Minus, Sparkles, Fire } from 'lucide-react'
+import { motion, AnimatePresence } from 'framer-motion'
+import { GamingButton } from '@/components/ui/GamingButton'
 import toast, { Toaster } from 'react-hot-toast'
 
 export default function LeaderboardPage() {
@@ -187,23 +189,46 @@ export default function LeaderboardPage() {
   }
 
   return (
-    <div className="min-h-screen bg-[var(--background)]">
+    <div className="min-h-screen bg-gradient-to-br from-purple-50 via-white to-blue-50">
       <Toaster position="top-center" />
       
-      <div className="gradient-bg text-white p-4 mb-6">
-        <div className="max-w-md mx-auto">
-          <h1 className="text-2xl font-bold text-center">ランキング</h1>
-          <p className="text-center text-sm mt-2 opacity-90">
-            全国のサントリー飲活仲間と競おう！
-          </p>
-          {myRank && (
-            <div className="mt-3 text-center">
-              <span className="bg-white/20 px-3 py-1 rounded-full text-sm">
-                あなたの順位: {myRank}位
-              </span>
-            </div>
-          )}
+      {/* ヘッダー */}
+      <div className="relative overflow-hidden">
+        <div className="absolute inset-0 bg-gradient-to-br from-purple-600 to-blue-600 opacity-90" />
+        <div className="absolute inset-0">
+          <div className="absolute top-10 left-10 w-32 h-32 bg-yellow-400 rounded-full opacity-30 blur-xl animate-pulse" />
+          <div className="absolute bottom-10 right-10 w-40 h-40 bg-pink-400 rounded-full opacity-30 blur-xl animate-pulse" />
         </div>
+        
+        <motion.div
+          initial={{ opacity: 0, y: -20 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="relative z-10 p-6 text-white"
+        >
+          <div className="max-w-md mx-auto text-center">
+            <h1 className="text-3xl font-bold mb-2 flex items-center justify-center gap-2">
+              <Trophy className="text-yellow-400" size={32} />
+              ランキング
+            </h1>
+            <p className="text-white/80">
+              全国のサントリー飲活仲間と競おう！
+            </p>
+            {myRank && (
+              <motion.div
+                initial={{ scale: 0 }}
+                animate={{ scale: 1 }}
+                transition={{ type: "spring", delay: 0.2 }}
+                className="mt-4 inline-block"
+              >
+                <div className="bg-white/20 backdrop-blur-md px-4 py-2 rounded-full">
+                  <span className="text-lg font-bold">あなたの順位: </span>
+                  <span className="text-2xl font-bold text-yellow-400">{myRank}</span>
+                  <span className="text-lg">位</span>
+                </div>
+              </motion.div>
+            )}
+          </div>
+        </motion.div>
       </div>
 
       <div className="max-w-md mx-auto px-4">

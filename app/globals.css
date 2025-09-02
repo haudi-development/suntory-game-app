@@ -2,17 +2,27 @@
 @tailwind components;
 @tailwind utilities;
 
+/* デザインシステムをインポート */
+@import url('/styles/design-system.css');
+
 @layer base {
   :root {
+    /* 新しいカラーシステム */
     --primary: #6DCFF6;
     --primary-dark: #0099DA;
     --accent: #FFD700;
-    --success: #10B981;
+    --success: #00D9A3;
+    --danger: #FF6B9D;
     --warning: #F59E0B;
     --background: #F8FAFC;
     --foreground: #1E293B;
     --text: #1E293B;
     --border: #E2E8F0;
+    
+    /* グラデーション */
+    --gradient-primary: linear-gradient(135deg, #6DCFF6 0%, #0099DA 100%);
+    --gradient-gold: linear-gradient(135deg, #FFD700 0%, #FFA500 100%);
+    --gradient-purple: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
   }
 
   * {
