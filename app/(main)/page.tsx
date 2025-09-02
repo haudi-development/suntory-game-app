@@ -49,6 +49,18 @@ export default function HomePage() {
       .eq('user_id', userId)
       .single()
     
+    // selected_characterがない場合はデフォルトを設定
+    if (data && !data.selected_character) {
+      const { error } = await supabase
+        .from('profiles')
+        .update({ selected_character: 'premol' })
+        .eq('user_id', userId)
+      
+      if (!error) {
+        data.selected_character = 'premol'
+      }
+    }
+    
     setProfile(data)
   }
 
@@ -171,29 +183,36 @@ export default function HomePage() {
             >
               <div className="w-20 h-20 bg-gradient-to-br from-blue-100 to-purple-100 rounded-full flex items-center justify-center shadow-lg">
                 <span className="text-4xl">
-                  {!profile?.selected_character ? '🎮' :
-                   profile.selected_character === 'premol' ? '🍺' :
-                   profile.selected_character === 'kakuhai' ? '🥃' :
-                   profile.selected_character === 'midori' ? '🍸' :
-                   profile.selected_character === 'lemon' ? '🍋' :
-                   profile.selected_character === 'allfree' ? '🍻' :
-                   profile.selected_character === 'tennensui' ? '💧' :
-                   '🎮'}
+                  {(() => {
+                    const char = profile?.selected_character || 'premol' // デフォルトをpremolに設定
+                    switch(char) {
+                      case 'premol': return '🍺'
+                      case 'kakuhai': return '🥃'
+                      case 'midori': return '🍸'
+                      case 'lemon': return '🍋'
+                      case 'allfree': return '🍻'
+                      case 'tennensui': return '💧'
+                      default: return '🍺' // デフォルト絵文字
+                    }
+                  })()}
                 </span>
               </div>
-              {profile?.selected_character && (
-                <div className="absolute -bottom-1 left-1/2 -translate-x-1/2 bg-gradient-to-r from-blue-500 to-purple-500 text-white px-2 py-0.5 rounded-full shadow-sm">
-                  <span className="text-xs font-semibold">
-                    {profile.selected_character === 'premol' ? 'プレモルくん' :
-                     profile.selected_character === 'kakuhai' ? '角ハイ坊や' :
-                     profile.selected_character === 'midori' ? '翠ジン妖精' :
-                     profile.selected_character === 'lemon' ? 'レモンサワー兄弟' :
-                     profile.selected_character === 'allfree' ? 'オールフリー先生' :
-                     profile.selected_character === 'tennensui' ? '天然水スピリット' :
-                     'キャラクター'}
-                  </span>
-                </div>
-              )}
+              <div className="absolute -bottom-1 left-1/2 -translate-x-1/2 bg-gradient-to-r from-blue-500 to-purple-500 text-white px-2 py-0.5 rounded-full shadow-sm">
+                <span className="text-xs font-semibold">
+                  {(() => {
+                    const char = profile?.selected_character || 'premol'
+                    switch(char) {
+                      case 'premol': return 'プレモルくん'
+                      case 'kakuhai': return '角ハイ坊や'
+                      case 'midori': return '翠ジン妖精'
+                      case 'lemon': return 'レモンサワー兄弟'
+                      case 'allfree': return 'オールフリー先生'
+                      case 'tennensui': return '天然水スピリット'
+                      default: return 'プレモルくん'
+                    }
+                  })()}
+                </span>
+              </div>
             </motion.div>
           </div>
 
