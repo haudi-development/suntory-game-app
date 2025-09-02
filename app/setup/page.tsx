@@ -94,6 +94,23 @@ export default function SetupPage() {
     try {
       logs.push('🔍 データベース状態を確認中...')
       
+      // profilesテーブル（RLSポリシーのテスト）
+      const { data: profiles, error: profilesError } = await supabase
+        .from('profiles')
+        .select('id')
+        .limit(1)
+      
+      if (profilesError) {
+        if (profilesError.message.includes('infinite recursion')) {
+          logs.push(`❌ RLSポリシーエラー: 無限再帰が検出されました`)
+          logs.push(`⚠️ 修正が必要です - 下の「RLSポリシー修正」ボタンをクリック`)
+        } else {
+          logs.push(`❌ profiles テーブル: ${profilesError.message}`)
+        }
+      } else {
+        logs.push('✅ profiles テーブル: 正常')
+      }
+      
       // venues テーブル
       const { data: venues, error: venuesError } = await supabase
         .from('venues')
@@ -161,6 +178,36 @@ export default function SetupPage() {
     }
   }
 
+  const fixPolicies = async () => {
+    setLoading(true)
+    setResults([])
+    const logs: string[] = []
+
+    try {
+      const response = await fetch('/api/fix-policies', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+      })
+      
+      const result = await response.json()
+      
+      if (result.sql) {
+        logs.push('📋 以下のSQLをSupabaseダッシュボードで実行してください:')
+        logs.push('━━━━━━━━━━━━━━━━━━━━━━━━━━━━')
+        result.steps.forEach((step: string) => logs.push(step))
+        logs.push('━━━━━━━━━━━━━━━━━━━━━━━━━━━━')
+        logs.push('SQL:')
+        logs.push(result.sql)
+      }
+    } catch (error) {
+      console.error('Fix policies error:', error)
+      logs.push(`❌ エラー: ${error instanceof Error ? error.message : 'Unknown error'}`)
+    } finally {
+      setResults(logs)
+      setLoading(false)
+    }
+  }
+
   return (
     <div className="min-h-screen bg-gray-50 p-4">
       <div className="max-w-2xl mx-auto">
@@ -172,7 +219,7 @@ export default function SetupPage() {
             データベースの初期設定と動作確認を行います。
           </p>
           
-          <div className="flex gap-4">
+          <div className="flex gap-4 flex-wrap">
             <button
               onClick={setupDatabase}
               disabled={loading}
@@ -187,6 +234,14 @@ export default function SetupPage() {
               className="px-6 py-3 bg-gray-600 text-white rounded-lg hover:bg-gray-700 disabled:opacity-50"
             >
               {loading ? '確認中...' : 'データベース状態確認'}
+            </button>
+            
+            <button
+              onClick={fixPolicies}
+              disabled={loading}
+              className="px-6 py-3 bg-red-600 text-white rounded-lg hover:bg-red-700 disabled:opacity-50"
+            >
+              {loading ? '生成中...' : 'RLSポリシー修正SQL生成'}
             </button>
           </div>
         </div>
