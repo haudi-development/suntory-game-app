@@ -7,7 +7,6 @@ import { motion, AnimatePresence } from 'framer-motion'
 import { Camera, Trophy, Gift, Sparkles, TrendingUp, Users, Target, Zap } from 'lucide-react'
 import { GamingButton } from '@/components/ui/GamingButton'
 import toast, { Toaster } from 'react-hot-toast'
-import { CharacterPlaceholder } from '@/components/CharacterPlaceholder'
 
 export default function HomePage() {
   const [user, setUser] = useState<any>(null)
@@ -92,12 +91,6 @@ export default function HomePage() {
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50">
       <Toaster position="top-center" />
       
-      {/* 固定ロゴ */}
-      <div className="fixed top-4 left-4 z-50 bg-white/90 backdrop-blur-sm rounded-full px-4 py-2 shadow-lg">
-        <div className="text-sm font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
-          KANPAI! by Suntory
-        </div>
-      </div>
       
       {/* ヘッダー */}
       <div className="relative overflow-hidden bg-gradient-to-br from-blue-400 to-purple-600">
@@ -112,7 +105,6 @@ export default function HomePage() {
             animate={{ opacity: 1, y: 0 }}
             className="text-center text-white"
           >
-            <div className="text-xs font-semibold text-white/80 mb-2">KANPAI! by Suntory</div>
             <h1 className="text-2xl font-bold mb-2">
               おかえりなさい！
             </h1>
@@ -179,12 +171,13 @@ export default function HomePage() {
             >
               <div className="w-20 h-20 bg-gradient-to-br from-blue-100 to-purple-100 rounded-full flex items-center justify-center shadow-lg">
                 <span className="text-4xl">
-                  {profile?.selected_character === 'premol' ? '🍺' :
-                   profile?.selected_character === 'kakuhai' ? '🥃' :
-                   profile?.selected_character === 'midori' ? '🍸' :
-                   profile?.selected_character === 'lemon' ? '🍋' :
-                   profile?.selected_character === 'allfree' ? '🍻' :
-                   profile?.selected_character === 'tennensui' ? '💧' :
+                  {!profile?.selected_character ? '🎮' :
+                   profile.selected_character === 'premol' ? '🍺' :
+                   profile.selected_character === 'kakuhai' ? '🥃' :
+                   profile.selected_character === 'midori' ? '🍸' :
+                   profile.selected_character === 'lemon' ? '🍋' :
+                   profile.selected_character === 'allfree' ? '🍻' :
+                   profile.selected_character === 'tennensui' ? '💧' :
                    '🎮'}
                 </span>
               </div>
@@ -197,7 +190,7 @@ export default function HomePage() {
                      profile.selected_character === 'lemon' ? 'レモンサワー兄弟' :
                      profile.selected_character === 'allfree' ? 'オールフリー先生' :
                      profile.selected_character === 'tennensui' ? '天然水スピリット' :
-                     profile.selected_character}
+                     'キャラクター'}
                   </span>
                 </div>
               )}

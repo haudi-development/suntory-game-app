@@ -205,7 +205,6 @@ export default function LeaderboardPage() {
             animate={{ opacity: 1, y: 0 }}
             className="text-center text-white"
           >
-            <div className="text-xs font-semibold text-white/80 mb-2">KANPAI! by Suntory</div>
             <h1 className="text-2xl font-bold mb-2 flex items-center justify-center gap-2">
               <Trophy className="text-yellow-400" size={28} />
               ランキング

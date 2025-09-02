@@ -259,7 +259,6 @@ export default function CheckInPage() {
             animate={{ opacity: 1, y: 0 }}
             className="text-center text-white"
           >
-            <div className="text-xs font-semibold text-white/80 mb-2">KANPAI! by Suntory</div>
             <h1 className="text-2xl font-bold mb-2">チェックイン</h1>
             <p className="text-white/80 text-sm">
               店舗にチェックインして特別ボーナスをゲット！

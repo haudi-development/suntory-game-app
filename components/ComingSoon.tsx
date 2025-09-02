@@ -15,13 +15,6 @@ export function ComingSoon({ title, description, icon }: ComingSoonProps) {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50">
-      {/* 固定ロゴ */}
-      <div className="fixed top-4 left-4 z-50 bg-white/90 backdrop-blur-sm rounded-full px-4 py-2 shadow-lg">
-        <div className="text-sm font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
-          KANPAI! by Suntory
-        </div>
-      </div>
-
       <div className="flex flex-col items-center justify-center min-h-screen px-4">
         <motion.div
           initial={{ opacity: 0, y: 20 }}

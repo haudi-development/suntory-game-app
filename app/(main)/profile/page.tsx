@@ -108,13 +108,6 @@ export default function ProfilePage() {
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50">
       <Toaster position="top-center" />
       
-      {/* 固定ロゴ */}
-      <div className="fixed top-4 left-4 z-50 bg-white/90 backdrop-blur-sm rounded-full px-4 py-2 shadow-lg">
-        <div className="text-sm font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
-          KANPAI! by Suntory
-        </div>
-      </div>
-      
       {/* ヘッダー */}
       <div className="relative overflow-hidden bg-gradient-to-br from-blue-400 to-purple-600">
         <div className="absolute inset-0">
@@ -128,19 +121,18 @@ export default function ProfilePage() {
           className="relative z-10 p-6 text-white"
         >
           <div className="text-center">
-            <div className="text-xs font-semibold text-white/80 mb-2">KANPAI! by Suntory</div>
             <h1 className="text-3xl font-bold mb-2">マイページ</h1>
             <p className="text-white/80">あなたの飲活記録</p>
           </div>
         </motion.div>
       </div>
 
-      <div className="max-w-md mx-auto px-4 -mt-8 relative z-20">
+      <div className="max-w-md mx-auto px-4 pb-24">
         {/* プロフィールカード */}
         <motion.div
           initial={{ opacity: 0, y: 40 }}
           animate={{ opacity: 1, y: 0 }}
-          className="bg-white rounded-3xl p-6 shadow-xl mb-6"
+          className="bg-white rounded-3xl p-6 shadow-xl mb-6 -mt-8 relative z-20"
         >
           <div className="flex items-center justify-between mb-4">
             <div className="flex items-center gap-4">
@@ -298,7 +290,7 @@ export default function ProfilePage() {
           initial={{ opacity: 0, y: 40 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.2 }}
-          className="bg-white rounded-3xl p-6 shadow-xl mb-24"
+          className="bg-white rounded-3xl p-6 shadow-xl"
         >
           <h2 className="text-lg font-bold mb-4 flex items-center gap-2">
             <Calendar className="text-green-500" size={20} />
