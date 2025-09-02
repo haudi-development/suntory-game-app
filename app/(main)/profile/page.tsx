@@ -136,7 +136,7 @@ export default function ProfilePage() {
         <motion.div
           initial={{ opacity: 0, y: -20 }}
           animate={{ opacity: 1, y: 0 }}
-          className="relative z-10 pt-16 pb-2 text-white"
+          className="relative z-10 pt-20 pb-2 text-white"
         >
           <div className="text-center">
             <h1 className="text-3xl font-bold mb-2">マイページ</h1>
@@ -385,7 +385,7 @@ export default function ProfilePage() {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4"
+            className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4 overflow-y-auto"
             onClick={() => setSelectedActivity(null)}
           >
             <motion.div
@@ -393,7 +393,7 @@ export default function ProfilePage() {
               animate={{ scale: 1, y: 0 }}
               exit={{ scale: 0.9, y: 20 }}
               onClick={(e) => e.stopPropagation()}
-              className="bg-white rounded-3xl max-w-md w-full max-h-[90vh] overflow-y-auto"
+              className="bg-white rounded-3xl max-w-md w-full my-8 max-h-[85vh] overflow-y-auto"
             >
               {/* モーダルヘッダー */}
               <div className="sticky top-0 bg-gradient-to-r from-blue-500 to-purple-600 p-4 rounded-t-3xl">
