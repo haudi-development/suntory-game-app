@@ -252,6 +252,52 @@ export default function SetupPage() {
     }
   }
 
+  const createTestUsers = async () => {
+    setLoading(true)
+    setResults([])
+    const logs: string[] = []
+
+    try {
+      logs.push('🔄 テストユーザー作成SQLを生成中...')
+      
+      const response = await fetch('/api/setup-test-users', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+      })
+      
+      const result = await response.json()
+      console.log('Create test users response:', result)
+      
+      if (result.sql) {
+        logs.push('📋 以下のSQLをSupabaseダッシュボードで実行してください:')
+        logs.push('━━━━━━━━━━━━━━━━━━━━━━━━━━━━')
+        if (result.steps && Array.isArray(result.steps)) {
+          result.steps.forEach((step: string) => logs.push(step))
+        }
+        logs.push('━━━━━━━━━━━━━━━━━━━━━━━━━━━━')
+        if (result.notes && Array.isArray(result.notes)) {
+          logs.push('📝 実行内容:')
+          result.notes.forEach((note: string) => logs.push(`  • ${note}`))
+        }
+        logs.push('━━━━━━━━━━━━━━━━━━━━━━━━━━━━')
+        logs.push('SQL:')
+        logs.push('```sql')
+        const sqlLines = result.sql.split('\n')
+        sqlLines.forEach((line: string) => logs.push(line))
+        logs.push('```')
+      } else {
+        logs.push('⚠️ SQLの生成に失敗しました')
+        logs.push(JSON.stringify(result, null, 2))
+      }
+    } catch (error) {
+      console.error('Create test users error:', error)
+      logs.push(`❌ エラー: ${error instanceof Error ? error.message : 'Unknown error'}`)
+    } finally {
+      setResults(logs)
+      setLoading(false)
+    }
+  }
+
   const createTables = async () => {
     setLoading(true)
     setResults([])
@@ -344,6 +390,14 @@ export default function SetupPage() {
               className="px-6 py-3 bg-purple-600 text-white rounded-lg hover:bg-purple-700 disabled:opacity-50"
             >
               {loading ? '生成中...' : 'Venues修正SQL生成'}
+            </button>
+            
+            <button
+              onClick={createTestUsers}
+              disabled={loading}
+              className="px-6 py-3 bg-orange-600 text-white rounded-lg hover:bg-orange-700 disabled:opacity-50"
+            >
+              {loading ? '生成中...' : 'テストユーザー作成SQL生成'}
             </button>
           </div>
         </div>
