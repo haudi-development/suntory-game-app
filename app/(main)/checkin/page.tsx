@@ -36,9 +36,12 @@ export default function CheckInPage() {
   const router = useRouter()
 
   useEffect(() => {
-    checkAuth()
-    fetchVenues()
-    checkCurrentCheckIn()
+    const initializePage = async () => {
+      await checkAuth()
+      await fetchVenues()
+      await checkCurrentCheckIn()
+    }
+    initializePage()
   }, [])
 
   const checkAuth = async () => {
@@ -56,7 +59,10 @@ export default function CheckInPage() {
         .eq('is_restaurant', true)
         .order('name')
 
-      if (error) throw error
+      if (error) {
+        console.error('Venues fetch error:', error)
+        throw error
+      }
       
       let venueList = data || []
       
@@ -95,9 +101,10 @@ export default function CheckInPage() {
       setNearbyVenues(nearby)
       
       return nearby // 返り値として近くの店舗を返す
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error fetching venues:', error)
-      toast.error('店舗情報の取得に失敗しました')
+      const errorMessage = error?.message || '不明なエラー'
+      toast.error(`店舗情報の取得に失敗: ${errorMessage}`)
       return []
     } finally {
       setLoading(false)

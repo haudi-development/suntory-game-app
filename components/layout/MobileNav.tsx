@@ -2,13 +2,13 @@
 
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
-import { Camera, Trophy, User, MapPin } from 'lucide-react'
+import { Home, Camera, Trophy, User, MapPin } from 'lucide-react'
 
 export default function MobileNav() {
   const pathname = usePathname()
 
   const navItems = [
-    { href: '/', icon: '🏠', label: 'ホーム' },
+    { href: '/', icon: <Home size={24} />, label: 'ホーム' },
     { href: '/checkin', icon: <MapPin size={24} />, label: 'チェックイン' },
     { href: '/capture', icon: <Camera size={24} />, label: '記録' },
     { href: '/leaderboard', icon: <Trophy size={24} />, label: 'ランキング' },
@@ -28,11 +28,7 @@ export default function MobileNav() {
                 isActive ? 'text-primary-dark' : 'text-gray-600'
               }`}
             >
-              {typeof item.icon === 'string' ? (
-                <div className="text-2xl mb-1">{item.icon}</div>
-              ) : (
-                <div className="mb-1">{item.icon}</div>
-              )}
+              <div className="mb-1">{item.icon}</div>
               <span className="text-xs">{item.label}</span>
             </Link>
           )
